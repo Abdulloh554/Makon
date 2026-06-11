@@ -1,0 +1,31 @@
+{
+  "name": "joybor-backend",
+  "version": "2.1.0",
+  "description": "Joybor backend API — Makon platformasi (modulli arxitektura)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "eslint src/",
+    "start:cluster": "pm2 start src/server.js -i max --name joybor-api",
+    "start:docker": "docker compose up -d"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.11.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0",
+    "zod": "^3.25.76"
+  },
+  "optionalDependencies": {
+    "express-rate-limit": "^7.5.0",
+    "pm2": "^5.4.3",
+    "winston": "^3.17.0"
+  }
+}
