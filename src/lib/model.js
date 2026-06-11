@@ -252,4 +252,4 @@ function clearAllData() {
   }
 }
 
-module.exports = { createModel, switchToMongoose, clearAllData };
+module.exports = { createModel, switchToMongoose, clearAllData, usingMemory };

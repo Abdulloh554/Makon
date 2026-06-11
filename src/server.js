@@ -10,6 +10,8 @@ const { connectDB } = require('./config/database');
 const { connectRedis } = require('./config/redis');
 const { rateLimit } = require('./middleware/rateLimit');
 const { errorHandler } = require('./middleware/errorHandler');
+const { clearAllData, usingMemory } = require('./lib/model');
+const mongoose = require('mongoose');
 
 const authRoutes = require('./modules/auth/auth.routes');
 const propertiesRoutes = require('./modules/property/property.routes');
@@ -39,13 +41,7 @@ app.use('/api/properties', propertiesRoutes);
 app.use('/api/sellers', sellersRoutes);
 app.use('/api/messages', messagesRoutes);
 
-// ─── Health check ───────────────────────────────────────────────────
-app.get('/', (req, res) => {
-  res.json({ message: 'Joybor Backend API running', version: '2.1.0' });
-});
-
 // ─── Reset all data (development only) ─────────────────────────────
-const { clearAllData } = require('./lib/model');
 app.post('/api/reset', (req, res) => {
   if (!config.isDev) {
     return res.status(403).json({ error: 'Faqat development rejimida ruxsat etilgan.' });
@@ -53,14 +49,6 @@ app.post('/api/reset', (req, res) => {
   clearAllData();
   res.json({ message: 'Barcha ma\'lumotlar o\'chirildi.' });
 });
-
-// ─── 404 handler ────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` });
-});
-
-// ─── Error handler ──────────────────────────────────────────────────
-app.use(errorHandler);
 
 // ─── Health check ───────────────────────────────────
 const startTime = Date.now();
@@ -78,6 +66,14 @@ app.get('/health', (req, res) => {
     environment: config.nodeEnv,
   });
 });
+
+// ─── 404 handler ────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` });
+});
+
+// ─── Error handler ──────────────────────────────────────────────────
+app.use(errorHandler);
 
 // ─── Start server ───────────────────────────────────────────────────
 const server = app.listen(config.port, () => {

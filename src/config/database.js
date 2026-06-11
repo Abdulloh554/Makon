@@ -22,4 +22,12 @@ function isConnected() {
   return connected;
 }
 
-module.exports = { connectDB: connectDBAsync, isConnected };
+async function closeDB() {
+  if (connected) {
+    await mongoose.disconnect();
+    console.log('MongoDB disconnected');
+    connected = false;
+  }
+}
+
+module.exports = { connectDB: connectDBAsync, isConnected, closeDB };

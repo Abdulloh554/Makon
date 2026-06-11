@@ -4,7 +4,7 @@
   "description": "Joybor backend API — Makon platformasi (modulli arxitektura)",
   "main": "src/server.js",
   "scripts": {
-    "start": "NODE_ENV=production node src/server.js",
+    "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "lint": "eslint src/",
     "start:cluster": "pm2 start src/server.js -i max --name joybor-api",
