@@ -1,14 +1,18 @@
 {
   "name": "joybor-backend",
-  "version": "2.1.0",
-  "description": "Joybor backend API — Makon platformasi (modulli arxitektura)",
-  "main": "src/server.js",
+  "version": "3.0.0",
+  "description": "Joybor backend API — Makon platformasi (TypeScript, modulli arxitektura)",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
     "lint": "eslint src/",
-    "start:cluster": "pm2 start src/server.js -i max --name joybor-api",
-    "start:docker": "docker compose up -d"
+    "typecheck": "tsc --noEmit",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "clean": "if exist dist rmdir /s /q dist"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -22,6 +26,26 @@
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
     "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.10.0",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.61.0",
+    "@typescript-eslint/parser": "^8.61.0",
+    "eslint": "^9.0.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
   },
   "optionalDependencies": {
     "express-rate-limit": "^7.5.0",
