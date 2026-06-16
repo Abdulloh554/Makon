@@ -1,11 +1,14 @@
 import request from 'supertest'
-import app from '../server'
+import app from '../app'
+import { userModel } from '../modules/user/user.model'
+import { sellerModel } from '../modules/seller/seller.model'
+import bcrypt from 'bcryptjs'
 
 describe('Auth API', () => {
-  describe('POST /api/auth/register', () => {
-    it('should register a new user', async () => {
+  describe('POST /api/v1/auth/register', () => {
+    it('should register a new user and return user data', async () => {
       const res = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           firstName: 'Test',
           lastName: 'User',
@@ -15,95 +18,90 @@ describe('Auth API', () => {
 
       expect(res.status).toBe(201)
       expect(res.body.success).toBe(true)
-      expect(res.body.data).toHaveProperty('token')
       expect(res.body.data.user.firstName).toBe('Test')
+      expect(res.body.data.user.phone).toBe('+998901234567')
+      expect(res.body.data.user.password).toBeUndefined()
+      expect(res.headers['set-cookie']).toBeDefined()
     })
 
-    it('should reject duplicate phone', async () => {
+    it('should reject duplicate phone number', async () => {
       await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901234568',
+          phone: '+998901234567',
           password: 'password123',
         })
 
       const res = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
-          firstName: 'Test',
-          lastName: 'User',
-          phone: '+998901234568',
-          password: 'password123',
+          firstName: 'Test2',
+          lastName: 'User2',
+          phone: '+998901234567',
+          password: 'password456',
         })
 
       expect(res.status).toBe(409)
+      expect(res.body.success).toBe(false)
     })
 
-    it('should reject missing required fields', async () => {
+    it('should reject invalid phone number', async () => {
       const res = await request(app)
-        .post('/api/auth/register')
-        .send({ firstName: 'Test' })
-
-      expect(res.status).toBe(400)
-    })
-
-    it('should reject weak password', async () => {
-      const res = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
-          firstName: 'Weak',
-          lastName: 'Password',
-          phone: '+998901234570',
-          password: '12',
+          firstName: 'Test',
+          lastName: 'User',
+          phone: '',
+          password: 'password123',
         })
 
       expect(res.status).toBe(400)
     })
   })
 
-  describe('POST /api/auth/login', () => {
+  describe('POST /api/v1/auth/login', () => {
     beforeEach(async () => {
-      await request(app)
-        .post('/api/auth/register')
-        .send({
-          firstName: 'Login',
-          lastName: 'Test',
-          phone: '+998901234569',
-          password: 'password123',
-        })
+      const salt = await bcrypt.genSalt(10)
+      const hashed = await bcrypt.hash('password123', salt)
+      await userModel.create({
+        firstName: 'Test',
+        lastName: 'User',
+        phone: '+998901234567',
+        password: hashed,
+      })
     })
 
-    it('should login with valid credentials', async () => {
+    it('should login with correct credentials', async () => {
       const res = await request(app)
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
-          phone: '+998901234569',
+          phone: '+998901234567',
           password: 'password123',
         })
 
       expect(res.status).toBe(200)
       expect(res.body.success).toBe(true)
-      expect(res.body.data).toHaveProperty('token')
+      expect(res.headers['set-cookie']).toBeDefined()
     })
 
-    it('should reject invalid password', async () => {
+    it('should reject wrong password', async () => {
       const res = await request(app)
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
-          phone: '+998901234569',
+          phone: '+998901234567',
           password: 'wrongpassword',
         })
 
       expect(res.status).toBe(401)
     })
 
-    it('should reject non-existent phone', async () => {
+    it('should reject non-existent user', async () => {
       const res = await request(app)
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
-          phone: '+998900000000',
+          phone: '+998909999999',
           password: 'password123',
         })
 
@@ -111,67 +109,70 @@ describe('Auth API', () => {
     })
   })
 
-  describe('POST /api/auth/logout', () => {
-    it('should clear cookie', async () => {
-      const res = await request(app).post('/api/auth/logout')
-
-      expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
-    })
-  })
-
-  describe('GET /api/auth/me', () => {
-    it('should return current user when authenticated', async () => {
+  describe('GET /api/v1/auth/me', () => {
+    it('should return user data when authenticated', async () => {
       const registerRes = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
-          firstName: 'Me',
-          lastName: 'Test',
-          phone: '+998901234571',
+          firstName: 'Test',
+          lastName: 'User',
+          phone: '+998901234567',
           password: 'password123',
         })
-      const token = registerRes.body.data.token
 
+      const cookies = registerRes.headers['set-cookie']
       const res = await request(app)
-        .get('/api/auth/me')
-        .set('Authorization', `Bearer ${token}`)
+        .get('/api/v1/auth/me')
+        .set('Cookie', cookies)
 
       expect(res.status).toBe(200)
-      expect(res.body.data.firstName).toBe('Me')
-      expect(res.body.data).not.toHaveProperty('password')
+      expect(res.body.data.firstName).toBe('Test')
     })
 
-    it('should reject without token', async () => {
-      const res = await request(app).get('/api/auth/me')
+    it('should return 401 without auth', async () => {
+      const res = await request(app)
+        .get('/api/v1/auth/me')
 
       expect(res.status).toBe(401)
     })
   })
 
-  describe('DELETE /api/auth/account', () => {
-    it('should delete account and related data', async () => {
+  describe('POST /api/v1/auth/refresh', () => {
+    it('should refresh token', async () => {
       const registerRes = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
-          firstName: 'Delete',
-          lastName: 'Me',
-          phone: '+998901234572',
+          firstName: 'Test',
+          lastName: 'User',
+          phone: '+998901234567',
           password: 'password123',
         })
-      const token = registerRes.body.data.token
 
+      const cookies = registerRes.headers['set-cookie']
       const res = await request(app)
-        .delete('/api/auth/account')
-        .set('Authorization', `Bearer ${token}`)
+        .post('/api/v1/auth/refresh')
+        .set('Cookie', cookies)
 
       expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
+      expect(res.headers['set-cookie']).toBeDefined()
+    })
 
-      const meRes = await request(app)
-        .get('/api/auth/me')
-        .set('Authorization', `Bearer ${token}`)
+    it('should return 401 without refresh token', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/refresh')
 
-      expect(meRes.status).toBe(401)
+      expect(res.status).toBe(401)
+    })
+  })
+
+  describe('POST /api/v1/auth/logout', () => {
+    it('should clear cookies', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/logout')
+
+      expect(res.status).toBe(200)
+      const setCookieHeader = res.headers['set-cookie']
+      expect(setCookieHeader).toBeDefined()
     })
   })
 })

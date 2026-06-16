@@ -1,0 +1,4 @@
+[WARN] MongoDB connection attempt 1/3 failed, retrying... {"error":"connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017"}
+[WARN] MongoDB connection attempt 2/3 failed, retrying... {"error":"connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017"}
+[WARN] MongoDB unavailable — falling back to in-memory mock database
+[ERROR] Uncaught Exception {"error":"listen EADDRINUSE: address already in use :::3001","stack":"Error: listen EADDRINUSE: address already in use :::3001\n    at Server.setupListenHandle [as _listen2] (node:net:2008:16)\n    at listenInCluster (node:net:2065:12)\n    at Server.listen (node:net:2170:7)\n    at app.listen (C:\\Users\\user\\Desktop\\Makon\\backend\\node_modules\\express\\lib\\application.js:635:24)\n    at start (C:\\Users\\user\\Desktop\\Makon\\backend\\src\\server.ts:23:24)"}

@@ -17,14 +17,24 @@ declare global {
 interface JwtPayload {
   id: string
   phone: string
+  type?: 'access' | 'refresh'
 }
 
 export function generateToken(user: Record<string, unknown>): string {
   const userId = user._id ? user._id.toString() : (user.id || '')
   return jwt.sign(
-    { id: userId, phone: user.phone || '' },
+    { id: userId, phone: user.phone || '', type: 'access' },
     config.jwt.secret,
     { expiresIn: config.jwt.expiresIn } as jwt.SignOptions,
+  )
+}
+
+export function generateRefreshToken(user: Record<string, unknown>): string {
+  const userId = user._id ? user._id.toString() : (user.id || '')
+  return jwt.sign(
+    { id: userId, phone: user.phone || '', type: 'refresh' },
+    config.jwt.refreshSecret,
+    { expiresIn: config.jwt.refreshExpiresIn } as jwt.SignOptions,
   )
 }
 
@@ -33,11 +43,8 @@ function extractToken(req: Request): string | null {
   if (header && header.startsWith('Bearer ')) {
     return header.split(' ')[1]
   }
-  const cookie = req.headers.cookie
-  if (cookie) {
-    const match = cookie.split(';').map(c => c.trim()).find(c => c.startsWith('token='))
-    if (match) return match.split('=')[1]
-  }
+  const token = req.cookies?.token
+  if (token) return token
   return null
 }
 
@@ -64,6 +71,29 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       sendError(res, err.statusCode, err.code, err.message)
       return
     }
+    if (err instanceof jwt.TokenExpiredError) {
+      sendError(res, 401, 'TOKEN_EXPIRED', 'Token muddati o\'tgan. Yangilash uchun /auth/refresh ga so\'rov yuboring.')
+      return
+    }
     sendError(res, 401, 'INVALID_TOKEN', 'Yaroqsiz token.')
   }
+}
+
+export async function optionalAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
+  try {
+    const token = extractToken(req)
+    if (!token) {
+      next()
+      return
+    }
+    const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload
+    const user = await userModel.findById(decoded.id)
+    if (user) {
+      req.user = user as Record<string, unknown>
+      req.userId = String((user as Record<string, unknown>)._id ?? (user as Record<string, unknown>).id ?? '')
+    }
+  } catch {
+    // Token invalid or expired — continue without auth
+  }
+  next()
 }

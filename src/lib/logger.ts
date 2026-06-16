@@ -15,7 +15,7 @@ class Logger {
   private readonly level: LogLevel
 
   constructor() {
-    this.level = config.isDev ? 'debug' : ('info' as LogLevel)
+    this.level = (config.isDev ? 'debug' : 'info') as LogLevel
   }
 
   private _log(level: LogLevel, msg: string, meta?: Record<string, unknown>): void {
@@ -30,16 +30,22 @@ class Logger {
       entry.meta = meta
     }
 
-    const output = JSON.stringify(entry)
-    switch (level) {
-      case 'error':
-        console.error(output) // eslint-disable-line no-console
-        break
-      case 'warn':
-        console.warn(output) // eslint-disable-line no-console
-        break
-      default:
-        console.log(output) // eslint-disable-line no-console
+    if (config.isDev) {
+      const prefix = `[${level.toUpperCase()}]`
+      const metaStr = meta && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : ''
+      switch (level) {
+        case 'error':
+          console.error(`${prefix} ${msg}${metaStr}`)
+          break
+        case 'warn':
+          console.warn(`${prefix} ${msg}${metaStr}`)
+          break
+        default:
+          console.log(`${prefix} ${msg}${metaStr}`)
+      }
+    } else {
+      const output = JSON.stringify(entry)
+      console.log(output)
     }
   }
 

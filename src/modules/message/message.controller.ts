@@ -1,44 +1,56 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as messageService from './message.service'
-import { sendSuccess } from '../../lib/response'
+import { sendSuccess, sendError } from '../../lib/response'
+import { messageCreateSchema } from '../../lib/validation'
+import { ZodError } from 'zod'
 
 function getUserId(req: Request): string {
   return (req as unknown as { userId: string }).userId
 }
 
-export async function list(req: Request, res: Response, next: NextFunction): Promise<void> {
+function handleZodError(err: unknown, res: Response): boolean {
+  if (err instanceof ZodError) {
+    const messages = err.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+    sendError(res, 400, 'VALIDATION_ERROR', messages.join('; '))
+    return true
+  }
+  return false
+}
+
+export async function send(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = req.query.userId as string
-    const messages = await messageService.list(userId, getUserId(req))
+    const data = messageCreateSchema.parse(req.body)
+    const message = await messageService.create(data, getUserId(req))
+    sendSuccess(res, message, 201)
+  } catch (err) {
+    if (handleZodError(err, res)) return
+    next(err)
+  }
+}
+
+export async function listConversations(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const conversations = await messageService.getConversations(getUserId(req))
+    sendSuccess(res, conversations)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export async function getMessages(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const conversationId = req.params.conversationId as string
+    const messages = await messageService.getMessages(conversationId, getUserId(req))
     sendSuccess(res, messages)
   } catch (err) {
     next(err)
   }
 }
 
-export async function send(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getUnreadCount(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { toUserId, propertyId, text } = req.body
-    const message = await messageService.send(getUserId(req), toUserId, propertyId, text)
-    sendSuccess(res, message, 201)
-  } catch (err) {
-    next(err)
-  }
-}
-
-export async function markRead(req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const message = await messageService.markRead(req.params.id, getUserId(req))
-    sendSuccess(res, message)
-  } catch (err) {
-    next(err)
-  }
-}
-
-export async function unreadCount(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const result = await messageService.unreadCount(getUserId(req))
-    sendSuccess(res, result)
+    const count = await messageService.getUnreadCount(getUserId(req))
+    sendSuccess(res, { unread: count })
   } catch (err) {
     next(err)
   }

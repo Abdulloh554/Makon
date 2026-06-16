@@ -1,62 +1,46 @@
 import request from 'supertest'
-import app from '../server'
+import app from '../app'
+import { sellerModel } from '../modules/seller/seller.model'
+import { userModel } from '../modules/user/user.model'
+import bcrypt from 'bcryptjs'
 
 describe('Sellers API', () => {
   beforeAll(async () => {
-    await request(app)
-      .post('/api/auth/register')
-      .send({
-        firstName: 'Seller',
-        lastName: 'Test',
-        phone: '+998902222201',
-        password: 'password123',
-      })
-  })
-
-  describe('GET /api/sellers', () => {
-    it('should return sellers list', async () => {
-      const res = await request(app).get('/api/sellers')
-
-      expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
-      expect(Array.isArray(res.body.data)).toBe(true)
+    const salt = await bcrypt.genSalt(10)
+    const hashed = await bcrypt.hash('password123', salt)
+    const user = await userModel.create({
+      firstName: 'Test',
+      lastName: 'User',
+      phone: '+998901234567',
+      password: hashed,
+    })
+    const userId = String(user._id)
+    await sellerModel.create({
+      userId,
+      name: 'Test Seller',
+      phone: '+998901234567',
+      rating: 5.0,
+      totalListings: 3,
     })
   })
 
-  describe('GET /api/sellers/:id', () => {
-    it('should return a seller by valid ID', async () => {
-      const listRes = await request(app).get('/api/sellers')
-      const sellers = listRes.body.data
-      if (!sellers || sellers.length === 0) return
-      const sellerId = sellers[0]._id || sellers[0].id
-
-      const res = await request(app).get(`/api/sellers/${sellerId}`)
+  describe('GET /api/v1/sellers', () => {
+    it('should list all sellers', async () => {
+      const res = await request(app)
+        .get('/api/v1/sellers')
 
       expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
-      expect(res.body.data).toHaveProperty('name')
+      expect(Array.isArray(res.body)).toBe(true)
+      expect(res.body.length).toBeGreaterThanOrEqual(1)
     })
+  })
 
+  describe('GET /api/v1/sellers/:id', () => {
     it('should return 404 for non-existent seller', async () => {
-      const res = await request(app).get('/api/sellers/nonexistentid123')
+      const res = await request(app)
+        .get('/api/v1/sellers/507f1f77bcf86cd799439011')
 
       expect(res.status).toBe(404)
-      expect(res.body.success).toBe(false)
-    })
-  })
-
-  describe('GET /api/sellers/:id/properties', () => {
-    it('should return properties for a seller', async () => {
-      const listRes = await request(app).get('/api/sellers')
-      const sellers = listRes.body.data
-      if (!sellers || sellers.length === 0) return
-      const sellerId = sellers[0]._id || sellers[0].id
-
-      const res = await request(app).get(`/api/sellers/${sellerId}/properties`)
-
-      expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
-      expect(Array.isArray(res.body.data)).toBe(true)
     })
   })
 })

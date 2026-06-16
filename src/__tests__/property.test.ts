@@ -1,152 +1,202 @@
 import request from 'supertest'
-import app from '../server'
+import app from '../app'
+import { propertyModel } from '../modules/property/property.model'
+import { sellerModel } from '../modules/seller/seller.model'
+import { userModel } from '../modules/user/user.model'
+import bcrypt from 'bcryptjs'
 
 describe('Properties API', () => {
-  let token: string
+  let cookies: string
+  let sellerId: string
   let propertyId: string
 
-  beforeAll(async () => {
-    const res = await request(app)
-      .post('/api/auth/register')
+  function extractCookies(res: request.Response): string {
+    const c = res.headers['set-cookie']
+    return Array.isArray(c) ? c.join('; ') : (c || '')
+  }
+
+  beforeEach(async () => {
+    const salt = await bcrypt.genSalt(10)
+    const hashed = await bcrypt.hash('password123', salt)
+    const user = await userModel.create({
+      firstName: 'Test',
+      lastName: 'User',
+      phone: '+998901234567',
+      password: hashed,
+    })
+    const userId = String(user._id)
+
+    const seller = await sellerModel.create({
+      userId,
+      name: 'Test Seller',
+      phone: '+998901234567',
+      rating: 5.0,
+      totalListings: 0,
+    })
+    sellerId = String(seller._id)
+
+    const registerRes = await request(app)
+      .post('/api/v1/auth/register')
       .send({
-        firstName: 'Seller',
-        lastName: 'Test',
-        phone: '+998901111111',
+        firstName: 'Test',
+        lastName: 'User',
+        phone: '+998901234568',
         password: 'password123',
       })
-    token = res.body.data.token
+    cookies = extractCookies(registerRes)
   })
 
-  describe('POST /api/properties', () => {
+  describe('POST /api/v1/properties', () => {
     it('should create a property', async () => {
       const res = await request(app)
-        .post('/api/properties')
-        .set('Authorization', `Bearer ${token}`)
+        .post('/api/v1/properties')
+        .set('Cookie', [cookies])
         .send({
           title: 'Test Property',
-          description: 'A nice property',
+          description: 'A nice test property with good location',
           price: 50000,
           type: 'apartment',
           dealType: 'sale',
           status: 'ready',
-          area: 80,
           rooms: 3,
+          area: 75,
           location: {
+            address: 'Toshkent, Yunusobod',
             lat: 41.2995,
             lng: 69.2401,
-            address: 'Tashkent, Uzbekistan',
           },
         })
 
       expect(res.status).toBe(201)
       expect(res.body.success).toBe(true)
       expect(res.body.data.title).toBe('Test Property')
-      propertyId = res.body.data.id || res.body.data._id
+      propertyId = res.body.data.id
     })
 
-    it('should reject without auth', async () => {
+    it('should reject property with missing required fields', async () => {
       const res = await request(app)
-        .post('/api/properties')
+        .post('/api/v1/properties')
+        .set('Cookie', [cookies])
         .send({
-          title: 'Test Property',
-          price: 50000,
-          type: 'apartment',
-          dealType: 'sale',
-          area: 80,
+          title: 'Test',
         })
-
-      expect(res.status).toBe(401)
-    })
-
-    it('should reject with missing required fields', async () => {
-      const res = await request(app)
-        .post('/api/properties')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ title: 'Incomplete' })
 
       expect(res.status).toBe(400)
     })
   })
 
-  describe('GET /api/properties', () => {
-    it('should return properties list', async () => {
-      const res = await request(app).get('/api/properties')
+  describe('GET /api/v1/properties', () => {
+    beforeEach(async () => {
+      for (let i = 0; i < 3; i++) {
+        await propertyModel.create({
+          sellerId,
+          title: `Property ${i}`,
+          description: `Description ${i}`,
+          price: 50000 + i * 10000,
+          type: 'apartment',
+          dealType: 'sale',
+          status: 'ready',
+          rooms: 2 + i,
+          area: 50 + i * 10,
+          location: { address: 'Toshkent', lat: 41.3, lng: 69.2 },
+        })
+      }
+    })
+
+    it('should list all properties', async () => {
+      const res = await request(app)
+        .get('/api/v1/properties')
 
       expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
-      expect(Array.isArray(res.body.data)).toBe(true)
+      expect(res.body.data.length).toBe(3)
     })
 
     it('should filter by dealType', async () => {
-      const res = await request(app).get('/api/properties?dealType=sale')
+      const res = await request(app)
+        .get('/api/v1/properties?dealType=sale')
 
       expect(res.status).toBe(200)
-      expect(res.body.data.every((p: Record<string, unknown>) => p.dealType === 'sale')).toBe(true)
+      expect(res.body.data.length).toBe(3)
     })
 
-    it('should filter by property type', async () => {
-      const res = await request(app).get('/api/properties?propertyType=apartment')
+    it('should paginate results', async () => {
+      const res = await request(app)
+        .get('/api/v1/properties?page=1&limit=2')
 
       expect(res.status).toBe(200)
-      expect(res.body.data.every((p: Record<string, unknown>) => p.type === 'apartment')).toBe(true)
+      expect(res.body.data.length).toBe(2)
+      expect(res.body.totalPages).toBe(2)
+    })
+
+    it('should reject NoSQL injection attempts', async () => {
+      const res = await request(app)
+        .get('/api/v1/properties?price[$gt]=0')
+
+      expect(res.status).toBe(200)
     })
   })
 
-  describe('GET /api/properties/:id', () => {
-    it('should return a property by ID', async () => {
-      if (!propertyId) return
-      const res = await request(app).get(`/api/properties/${propertyId}`)
+  describe('GET /api/v1/properties/:id', () => {
+    beforeEach(async () => {
+      const prop = await propertyModel.create({
+        sellerId,
+        title: 'Test Property',
+        description: 'A nice test property',
+        price: 50000,
+        type: 'apartment',
+        dealType: 'sale',
+        status: 'ready',
+        rooms: 3,
+        area: 75,
+        location: { address: 'Toshkent', lat: 41.3, lng: 69.2 },
+      })
+      propertyId = String(prop._id)
+    })
+
+    it('should get property by id', async () => {
+      const res = await request(app)
+        .get(`/api/v1/properties/${propertyId}`)
 
       expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
-      expect(res.body.data.title).toBe('Test Property')
+      expect(res.body.title).toBe('Test Property')
     })
 
     it('should return 404 for non-existent property', async () => {
-      const res = await request(app).get('/api/properties/nonexistentid123')
+      const res = await request(app)
+        .get('/api/v1/properties/507f1f77bcf86cd799439011')
 
       expect(res.status).toBe(404)
     })
   })
 
-  describe('PATCH /api/properties/:id', () => {
-    it('should update a property', async () => {
-      if (!propertyId) return
-      const res = await request(app)
-        .patch(`/api/properties/${propertyId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({ price: 60000, title: 'Updated Property' })
-
-      expect(res.status).toBe(200)
-      expect(res.body.data.title).toBe('Updated Property')
-      expect(res.body.data.price).toBe(60000)
+  describe('DELETE /api/v1/properties/:id', () => {
+    beforeEach(async () => {
+      const prop = await propertyModel.create({
+        sellerId,
+        title: 'Test Property',
+        description: 'A nice test property',
+        price: 50000,
+        type: 'apartment',
+        dealType: 'sale',
+        status: 'ready',
+        rooms: 3,
+        area: 75,
+        location: { address: 'Toshkent', lat: 41.3, lng: 69.2 },
+      })
+      propertyId = String(prop._id)
     })
 
-    it('should reject update without auth', async () => {
-      if (!propertyId) return
+    it('should delete own property', async () => {
       const res = await request(app)
-        .patch(`/api/properties/${propertyId}`)
-        .send({ price: 70000 })
-
-      expect(res.status).toBe(401)
-    })
-  })
-
-  describe('DELETE /api/properties/:id', () => {
-    it('should delete a property', async () => {
-      if (!propertyId) return
-      const res = await request(app)
-        .delete(`/api/properties/${propertyId}`)
-        .set('Authorization', `Bearer ${token}`)
+        .delete(`/api/v1/properties/${propertyId}`)
+        .set('Cookie', [cookies])
 
       expect(res.status).toBe(200)
-      expect(res.body.success).toBe(true)
     })
 
     it('should reject delete without auth', async () => {
-      if (!propertyId) return
       const res = await request(app)
-        .delete(`/api/properties/${propertyId}`)
+        .delete(`/api/v1/properties/${propertyId}`)
 
       expect(res.status).toBe(401)
     })

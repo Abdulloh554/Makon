@@ -4,7 +4,6 @@ import { userModel } from '../user/user.model'
 import { sellerModel } from '../seller/seller.model'
 import { propertyModel } from '../property/property.model'
 import { messageModel } from '../message/message.model'
-import { generateToken } from '../../middleware/auth'
 import { NotFoundError, ConflictError, UnauthorizedError } from '../../lib/errors'
 import { config } from '../../config'
 
@@ -24,13 +23,11 @@ export async function login(phone: string, password: string) {
     throw new UnauthorizedError('Noto\'g\'ri parol.')
   }
 
-  // lastLoginAt ni alohida update qilish, butun document ni save qilmaslik
   await userModel.findOneAndUpdate({ phone }, { lastLoginAt: new Date() })
 
   const userJson = user.toJSON()
   delete userJson.password
-  const token = generateToken(user)
-  return { token, user: userJson }
+  return { user: userJson }
 }
 
 export async function register(firstName: string, lastName: string, phone: string, password: string) {
@@ -62,8 +59,7 @@ export async function register(firstName: string, lastName: string, phone: strin
 
   const userJson = user.toJSON()
   delete userJson.password
-  const token = generateToken(user)
-  return { token, user: userJson }
+  return { user: userJson }
 }
 
 export async function me(userId: string) {
@@ -102,7 +98,6 @@ export async function deleteAccount(userId: string) {
   }
 
   await userModel.findByIdAndDelete(userId)
-
   return { message: 'Akkount va barcha ma\'lumotlar o\'chirildi.' }
 }
 
@@ -123,7 +118,7 @@ export async function forgotPassword(phone: string) {
   })
 
   if (config.isDev) {
-    console.log(`[DEV] Password reset token for ${phone}: ${token}`) // eslint-disable-line no-console
+    console.log(`[DEV] Password reset token for ${phone}: ${token}`)
   }
 
   return { message: 'Agar telefon raqam mavjud bo\'lsa, kod yuborildi.' }

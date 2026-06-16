@@ -7,27 +7,35 @@ function createConfig() {
   const isProduction = process.env.NODE_ENV === 'production'
 
   const configSchema = z.object({
-    PORT: z.coerce.number().default(3000),
+    PORT: z.coerce.number().default(4000),
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    MONGODB_URI: z.string().default('mongodb://localhost:27017/joybor'),
-    USE_MONGO: z.string().default(isProduction ? 'true' : 'false'),
+    MONGODB_URI: z.string().default('mongodb://localhost:27017/makon'),
+    USE_MONGO: z.string().default(isProduction ? 'true' : 'true'),
     JWT_SECRET: isProduction
       ? z.string().min(32, 'Production da JWT_SECRET kamida 32 belgidan iborat bo\'lishi kerak')
-      : z.string().min(1).default('dev_jwt_secret_key_not_for_production'),
-    JWT_EXPIRES_IN: z.string().default('24h'),
+      : z.string().min(1).default('dev_jwt_secret_key_not_for_production_' + Date.now()),
+    JWT_EXPIRES_IN: z.string().default('15m'),
+    JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+    JWT_REFRESH_SECRET: isProduction
+      ? z.string().min(32)
+      : z.string().min(1).default('dev_refresh_secret_key_for_development_only'),
     REDIS_URL: z.string().default('redis://localhost:6379'),
-    REDIS_ENABLED: z.string().default('false'),
+    REDIS_ENABLED: z.string().default('true'),
     CORS_ORIGIN: isProduction
       ? z.string().min(1, 'Production da CORS_ORIGIN aniq ko\'rsatilishi kerak').refine(v => v !== '*', { message: 'Production da CORS_ORIGIN * bo\'lishi mumkin emas' })
       : z.string().default('http://localhost:3000'),
     RATE_LIMIT_MAX: z.coerce.number().default(isProduction ? 30 : 100),
     RATE_LIMIT_WINDOW_MS: z.coerce.number().default(15 * 60 * 1000),
+    SENTRY_DSN: z.string().default(''),
+    SENTRY_ENABLED: z.string().default('false'),
+    LOG_LEVEL: z.string().default(isProduction ? 'info' : 'debug'),
+    TELEGRAM_BOT_TOKEN: z.string().default('your-telegram-bot-token'),
   })
 
   const parsed = configSchema.safeParse(process.env)
 
   if (!parsed.success) {
-    console.error('Invalid configuration:', parsed.error.flatten().fieldErrors) // eslint-disable-line no-console
+    console.error('Invalid configuration:', parsed.error.flatten().fieldErrors)
     process.exit(1)
   }
 
@@ -51,6 +59,8 @@ export const config = {
   jwt: {
     secret: env.JWT_SECRET,
     expiresIn: env.JWT_EXPIRES_IN,
+    refreshSecret: env.JWT_REFRESH_SECRET,
+    refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
   },
 
   redis: {
@@ -66,6 +76,17 @@ export const config = {
     windowMs: env.RATE_LIMIT_WINDOW_MS,
     max: env.RATE_LIMIT_MAX,
   },
+
+  sentry: {
+    dsn: env.SENTRY_DSN,
+    enabled: env.SENTRY_ENABLED === 'true',
+  },
+
+  log: {
+    level: env.LOG_LEVEL,
+  },
+
+  telegramBotToken: env.TELEGRAM_BOT_TOKEN,
 } as const
 
 export type Config = typeof config
