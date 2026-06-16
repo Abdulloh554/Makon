@@ -7,17 +7,9 @@ import { connectDB, closeDB } from './config/database'
 import { connectRedis } from './config/redis'
 
 async function start(): Promise<void> {
-  await connectDB()
-  await connectRedis()
-
-  // Dynamically import app AFTER DB connection, so mock flag is set
-  // before createModel() is called during module loading
+  // Start listening immediately so Render detects the port
   const { seedPlans } = await import('./modules/payment/payment.service')
   const { default: app } = await import('./app')
-
-  await seedPlans()
-
-  logger.info('Database and Redis connected successfully', { environment: config.nodeEnv })
 
   if (!process.env.JEST_WORKER_ID) {
     const server = app.listen(config.port, () => {
@@ -27,6 +19,12 @@ async function start(): Promise<void> {
         sentry: config.sentry.enabled ? 'enabled' : 'disabled',
       })
     })
+
+    // Connect DB and Redis in background (non-blocking)
+    connectDB().catch(err => logger.error('Database connection failed', { error: String(err) }))
+    connectRedis().catch(err => logger.error('Redis connection failed', { error: String(err) }))
+
+    await seedPlans()
 
     function shutdown(signal: string): void {
       logger.info(`${signal} received — shutting down gracefully...`, { signal })

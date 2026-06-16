@@ -10,6 +10,12 @@ export const store = { useMock: false }
 export async function connectDB(): Promise<void> {
   if (config.isTest) return
 
+  if (!config.mongodb.useMongo) {
+    store.useMock = true
+    await seedMockData()
+    return
+  }
+
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       await mongoose.connect(config.mongodb.uri, {
