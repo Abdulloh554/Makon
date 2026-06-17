@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as propertyService from './property.service'
-import { sendSuccess, sendError } from '../../lib/response'
-import { propertyQuerySchema, propertyCreateSchema, propertyUpdateSchema } from '../../lib/validation'
+import { sendSuccess, sendError } from '../../utils/response'
+import { propertyQuerySchema, propertyCreateSchema, propertyUpdateSchema } from '../../validations/index'
 import { ZodError } from 'zod'
 
 type Req = Request<{ id: string }>

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import type { Request, Response, NextFunction } from 'express'
 import { authenticate } from '../../middleware/auth'
-import { sendError } from '../../lib/response'
+import { sendError } from '../../utils/response'
 import * as ctrl from './admin.controller'
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {

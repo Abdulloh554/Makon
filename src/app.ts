@@ -9,8 +9,7 @@ import { config } from './config'
 import { rateLimit } from './middleware/rateLimit'
 import { errorHandler } from './middleware/errorHandler'
 import * as Sentry from '@sentry/node'
-import { clearAllData } from './lib/model'
-import * as path from 'path'
+import { clearAllData } from './database/model'
 
 import authRoutes from './modules/auth/auth.routes'
 import propertiesRoutes from './modules/property/property.routes'
@@ -21,6 +20,7 @@ import paymentRoutes from './modules/payment/payment.routes'
 import telegramRoutes from './modules/telegram/telegram.routes'
 import adminRoutes from './modules/admin/admin.routes'
 import imageRoutes from './modules/image/image.routes'
+import { LEGACY_UPLOADS_DIR, UPLOADS_DIR } from './modules/image/image.service'
 
 const app = express()
 
@@ -71,7 +71,8 @@ if (config.isProduction) {
 }
 
 // ─── NoSQL Injection Protection ──────────────────────────────────────
-app.use('/api/uploads', express.static(path.resolve(__dirname, '../uploads')))
+app.use('/api/uploads', express.static(UPLOADS_DIR))
+app.use('/api/uploads', express.static(LEGACY_UPLOADS_DIR))
 
 app.use(mongoSanitize({
   replaceWith: '_',

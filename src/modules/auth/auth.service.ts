@@ -4,7 +4,7 @@ import { userModel } from '../user/user.model'
 import { sellerModel } from '../seller/seller.model'
 import { propertyModel } from '../property/property.model'
 import { messageModel } from '../message/message.model'
-import { NotFoundError, ConflictError, UnauthorizedError } from '../../lib/errors'
+import { NotFoundError, ConflictError, UnauthorizedError } from '../../utils/errors'
 import { config } from '../../config'
 
 async function getUserId(doc: Record<string, unknown>): Promise<string> {

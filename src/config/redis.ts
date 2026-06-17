@@ -1,5 +1,5 @@
 import { config } from './index'
-import { logger } from '../lib/logger'
+import { logger } from '../utils/logger'
 
 let client: import('ioredis').Redis | null = null
 

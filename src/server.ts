@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import { config } from './config'
-import { logger } from './lib/logger'
+import { logger } from './utils/logger'
 import { connectDB, closeDB } from './config/database'
 import { connectRedis } from './config/redis'
 

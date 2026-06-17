@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as sellerService from './seller.service'
-import { sendSuccess } from '../../lib/response'
+import { sendSuccess } from '../../utils/response'
 
 export async function list(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

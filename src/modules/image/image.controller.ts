@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as imageService from './image.service'
-import { sendSuccess, sendError } from '../../lib/response'
+import { sendSuccess, sendError } from '../../utils/response'
 
 export async function upload(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

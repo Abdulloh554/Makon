@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as adminService from './admin.service'
-import { sendSuccess, sendError } from '../../lib/response'
+import { sendSuccess, sendError } from '../../utils/response'
 import { generateToken } from '../../middleware/auth'
 
 export async function login(req: Request, res: Response, next: NextFunction) {

@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as messageService from './message.service'
-import { sendSuccess, sendError } from '../../lib/response'
-import { messageCreateSchema } from '../../lib/validation'
+import { sendSuccess, sendError } from '../../utils/response'
+import { messageCreateSchema } from '../../validations/index'
 import { ZodError } from 'zod'
 
 function getUserId(req: Request): string {

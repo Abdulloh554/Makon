@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as paymentService from './payment.service'
-import { sendSuccess, sendError } from '../../lib/response'
+import { sendSuccess, sendError } from '../../utils/response'
 
 function getUserId(req: Request): string {
   return (req as unknown as { userId: string }).userId

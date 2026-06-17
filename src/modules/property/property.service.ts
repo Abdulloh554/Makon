@@ -1,13 +1,10 @@
 import { propertyModel } from './property.model'
 import { sellerModel } from '../seller/seller.model'
-import { cache } from '../../lib/cache'
-import { NotFoundError, ForbiddenError } from '../../lib/errors'
-import { config } from '../../config'
-import { saveImage as imageSave } from '../image/image.service'
+import { cache } from '../../utils/cache'
+import { NotFoundError, ForbiddenError } from '../../utils/errors'
+import { saveImage as imageSave, UPLOADS_DIR } from '../image/image.service'
 import * as fs from 'fs'
 import * as path from 'path'
-
-const UPLOADS_DIR = path.resolve(__dirname, '../../uploads')
 
 async function processImage(dataUri: string): Promise<string> {
   return imageSave(dataUri)

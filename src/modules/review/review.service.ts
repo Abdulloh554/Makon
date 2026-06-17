@@ -1,7 +1,7 @@
 import { reviewModel } from './review.model'
 import { sellerModel } from '../seller/seller.model'
-import { cache } from '../../lib/cache'
-import { NotFoundError } from '../../lib/errors'
+import { cache } from '../../utils/cache'
+import { NotFoundError } from '../../utils/errors'
 
 const CACHE_TTL = {
   REVIEWS_LIST: 60,

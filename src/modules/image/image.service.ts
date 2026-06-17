@@ -3,16 +3,9 @@ import * as fs from 'fs/promises'
 import * as fsSync from 'fs'
 import * as path from 'path'
 
-
-const UPLOADS_DIR = path.resolve(__dirname, '../../uploads')
+export const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads')
+export const LEGACY_UPLOADS_DIR = path.resolve(process.cwd(), 'src', 'uploads')
 const MAX_FILE_SIZE = 10 * 1024 * 1024
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const ALLOWED_EXTENSIONS: Record<string, string[]> = {
-  'image/jpeg': ['jpg', 'jpeg'],
-  'image/png': ['png'],
-  'image/webp': ['webp'],
-  'image/gif': ['gif'],
-}
 
 interface ImageInfo {
   hash: string
@@ -24,6 +17,12 @@ interface ImageInfo {
 }
 
 const imageMetaStore = new Map<string, ImageInfo>()
+
+function getReadableUploadDirs(): string[] {
+  return [UPLOADS_DIR, LEGACY_UPLOADS_DIR].filter(
+    (dir, index, dirs) => dirs.indexOf(dir) === index,
+  )
+}
 
 async function ensureUploadsDir(): Promise<void> {
   try {
@@ -97,37 +96,40 @@ export async function getImageInfo(hash: string): Promise<ImageInfo | null> {
     return imageMetaStore.get(hash)!
   }
 
-  const files = await fs.readdir(UPLOADS_DIR).catch(() => [])
-  for (const file of files) {
-    const fileHash = path.parse(file).name
-    if (fileHash === hash) {
-      const ext = path.extname(file).slice(1)
-      const filepath = path.join(UPLOADS_DIR, file)
-      const stat = await fs.stat(filepath).catch(() => null)
-      const info: ImageInfo = {
-        hash,
-        url: `/api/uploads/${file}`,
-        ext,
-        size: stat?.size ?? 0,
-        mime: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
-        createdAt: stat?.birthtime?.toISOString() ?? new Date().toISOString(),
+  for (const dir of getReadableUploadDirs()) {
+    const files = await fs.readdir(dir).catch(() => [])
+    for (const file of files) {
+      const fileHash = path.parse(file).name
+      if (fileHash === hash) {
+        const ext = path.extname(file).slice(1)
+        const filepath = path.join(dir, file)
+        const stat = await fs.stat(filepath).catch(() => null)
+        const info: ImageInfo = {
+          hash,
+          url: `/api/uploads/${file}`,
+          ext,
+          size: stat?.size ?? 0,
+          mime: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+          createdAt: stat?.birthtime?.toISOString() ?? new Date().toISOString(),
+        }
+        imageMetaStore.set(hash, info)
+        return info
       }
-      imageMetaStore.set(hash, info)
-      return info
     }
   }
   return null
 }
 
 export async function deleteImage(hash: string): Promise<boolean> {
-  const uploadsDir = UPLOADS_DIR
-  const files = await fs.readdir(uploadsDir).catch(() => [])
-  for (const file of files) {
-    const fileHash = path.parse(file).name
-    if (fileHash === hash) {
-      await fs.unlink(path.join(uploadsDir, file))
-      imageMetaStore.delete(hash)
-      return true
+  for (const uploadsDir of getReadableUploadDirs()) {
+    const files = await fs.readdir(uploadsDir).catch(() => [])
+    for (const file of files) {
+      const fileHash = path.parse(file).name
+      if (fileHash === hash) {
+        await fs.unlink(path.join(uploadsDir, file))
+        imageMetaStore.delete(hash)
+        return true
+      }
     }
   }
   return false

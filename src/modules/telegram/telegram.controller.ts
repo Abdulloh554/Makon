@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express'
 import crypto from 'crypto'
 import { config } from '../../config'
 import { userModel } from '../user/user.model'
-import { sendSuccess, sendError } from '../../lib/response'
+import { sendSuccess, sendError } from '../../utils/response'
 
 /**
  * Verify Telegram Login Widget data

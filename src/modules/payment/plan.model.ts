@@ -1,4 +1,4 @@
-import { createModel } from '../../lib/model'
+import { createModel } from '../../database/model'
 
 export interface Plan {
   id: string

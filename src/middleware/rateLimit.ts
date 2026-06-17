@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from 'express'
 import { config } from '../config'
-import { sendError } from '../lib/response'
+import { sendError } from '../utils/response'
 import { getRedisClient } from '../config/redis'
-import { logger } from '../lib/logger'
+import { logger } from '../utils/logger'
 
 interface HitEntry {
   timestamps: number[]

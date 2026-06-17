@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import { config } from './index'
-import { logger } from '../lib/logger'
+import { logger } from '../utils/logger'
 
 const MAX_RETRIES = 3
 const RETRY_BASE_MS = 2000
@@ -12,7 +12,7 @@ export async function connectDB(): Promise<void> {
 
   if (!config.mongodb.useMongo) {
     store.useMock = true
-    const mockdb = await import('../lib/mockdb')
+    const mockdb = await import('../database/mockdb')
     if (!mockdb.hasPersistedData()) {
       await seedMockData()
     } else {
@@ -40,7 +40,7 @@ export async function connectDB(): Promise<void> {
       } else if (config.isDev) {
         logger.warn('MongoDB unavailable — falling back to mock database')
         store.useMock = true
-        const mockdb = await import('../lib/mockdb')
+        const mockdb = await import('../database/mockdb')
         if (!mockdb.hasPersistedData()) {
           await seedMockData()
         } else {
@@ -58,7 +58,7 @@ export async function connectDB(): Promise<void> {
 }
 
 async function seedMockData(): Promise<void> {
-  const { createMockModel } = await import('../lib/mockdb')
+  const { createMockModel } = await import('../database/mockdb')
 
   const users = createMockModel('User')
   await users.create({
@@ -91,7 +91,7 @@ async function seedMockData(): Promise<void> {
 }
 
 async function seedMockProperties(): Promise<void> {
-  const { createMockModel } = await import('../lib/mockdb')
+  const { createMockModel } = await import('../database/mockdb')
   const properties = createMockModel('Property')
   const count = await properties.countDocuments()
   if (count > 0) return

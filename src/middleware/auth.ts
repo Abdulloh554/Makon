@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { config } from '../config'
-import { UnauthorizedError } from '../lib/errors'
-import { sendError } from '../lib/response'
+import { UnauthorizedError } from '../utils/errors'
+import { sendError } from '../utils/response'
 import { userModel } from '../modules/user/user.model'
 
 declare global {

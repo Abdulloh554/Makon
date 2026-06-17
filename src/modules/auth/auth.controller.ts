@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import * as authService from './auth.service'
-import { sendSuccess, sendError } from '../../lib/response'
+import { sendSuccess, sendError } from '../../utils/response'
 import { config } from '../../config'
-import { loginSchema, registerSchema } from '../../lib/validation'
+import { loginSchema, registerSchema } from '../../validations/index'
 import { ZodError } from 'zod'
 import { generateToken, generateRefreshToken } from '../../middleware/auth'
 

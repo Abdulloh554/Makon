@@ -1,7 +1,7 @@
 import { messageModel } from './message.model'
-import { userModel } from '../user/user.model'
-import { cache } from '../../lib/cache'
-import { NotFoundError } from '../../lib/errors'
+import { sellerModel } from '../seller/seller.model'
+import { cache } from '../../utils/cache'
+import { NotFoundError } from '../../utils/errors'
 
 const CACHE_TTL = {
   UNREAD_COUNT: 30,
@@ -11,11 +11,28 @@ async function toJSON(doc: Record<string, unknown>): Promise<Record<string, unkn
   return typeof doc.toJSON === 'function' ? doc.toJSON() : doc
 }
 
+async function resolveUserId(id: string): Promise<string> {
+  const seller = await sellerModel.findOne({ _id: id }).catch(() => null)
+  if (seller) {
+    const userId = String((seller as Record<string, unknown>).userId ?? '')
+    if (userId) return userId
+  }
+  const sellerByUserId = await sellerModel.findOne({ userId: id }).catch(() => null)
+  if (sellerByUserId) return id
+  return id
+}
+
+async function resolveBothIds(id1: string, id2: string): Promise<{ id1: string; id2: string }> {
+  const [resolved1, resolved2] = await Promise.all([resolveUserId(id1), resolveUserId(id2)])
+  return { id1: resolved1, id2: resolved2 }
+}
+
 export async function list(userId: string, currentUserId: string) {
+  const { id1: uid, id2: cuid } = await resolveBothIds(userId, currentUserId)
   const filter = {
     $or: [
-      { fromUserId: currentUserId, toUserId: userId },
-      { fromUserId: userId, toUserId: currentUserId },
+      { fromUserId: cuid, toUserId: uid },
+      { fromUserId: uid, toUserId: cuid },
     ],
   }
   const messages = await messageModel.find(filter).sort({ createdAt: 1 })
@@ -23,13 +40,15 @@ export async function list(userId: string, currentUserId: string) {
 }
 
 export async function create(data: { toUserId: string; propertyId: string; text: string }, fromUserId: string) {
+  const resolvedTo = await resolveUserId(data.toUserId)
+  const resolvedFrom = await resolveUserId(fromUserId)
   const message = await messageModel.create({
-    fromUserId,
-    toUserId: data.toUserId,
+    fromUserId: resolvedFrom,
+    toUserId: resolvedTo,
     propertyId: data.propertyId || 'general',
     text: data.text,
   })
-  await cache.del(`unread:${data.toUserId}`)
+  await cache.del(`unread:${resolvedTo}`)
   return toJSON(message)
 }
 
@@ -38,14 +57,16 @@ export async function send(fromUserId: string, toUserId: string, propertyId: str
 }
 
 export async function getConversations(userId: string) {
+  const uid = await resolveUserId(userId)
   const messages = await messageModel.find({
-    $or: [{ fromUserId: userId }, { toUserId: userId }],
+    $or: [{ fromUserId: uid }, { toUserId: uid }],
   }).sort({ createdAt: -1 })
 
   const conversationMap = new Map<string, Record<string, unknown>>()
 
   for (const msg of messages) {
-    const otherId = String(msg.fromUserId) === userId ? String(msg.toUserId) : String(msg.fromUserId)
+    const otherRaw = String(msg.fromUserId) === uid ? String(msg.toUserId) : String(msg.fromUserId)
+    const otherId = await resolveUserId(otherRaw)
     if (!conversationMap.has(otherId)) {
       conversationMap.set(otherId, {
         id: otherId,
@@ -53,9 +74,9 @@ export async function getConversations(userId: string) {
         participantName: otherId,
         lastMessage: String(msg.text || '').slice(0, 100),
         lastMessageAt: String(msg.createdAt),
-        unread: String(msg.fromUserId) !== userId && !msg.read ? 1 : 0,
+        unread: String(msg.fromUserId) !== uid && !msg.read ? 1 : 0,
       })
-    } else if (String(msg.fromUserId) !== userId && !msg.read) {
+    } else if (String(msg.fromUserId) !== uid && !msg.read) {
       const existing = conversationMap.get(otherId)!
       existing.unread = (existing.unread as number) + 1
     }
@@ -65,24 +86,25 @@ export async function getConversations(userId: string) {
 }
 
 export async function getMessages(conversationId: string, userId: string) {
+  const { id1: cid, id2: uid } = await resolveBothIds(conversationId, userId)
   const filter = {
     $or: [
-      { fromUserId: userId, toUserId: conversationId },
-      { fromUserId: conversationId, toUserId: userId },
+      { fromUserId: uid, toUserId: cid },
+      { fromUserId: cid, toUserId: uid },
     ],
   }
   const messages = await messageModel.find(filter).sort({ createdAt: 1 })
 
   // Mark messages as read
   for (const msg of messages) {
-    if (String(msg.toUserId) === userId && !msg.read) {
+    if (String(msg.toUserId) === uid && !msg.read) {
       msg.read = true
       msg.readAt = new Date()
       await msg.save()
     }
   }
 
-  await cache.del(`unread:${userId}`)
+  await cache.del(`unread:${uid}`)
   return Promise.all(messages.map(toJSON))
 }
 
@@ -97,9 +119,10 @@ export async function markRead(id: string, userId: string) {
 }
 
 export async function getUnreadCount(userId: string) {
-  const cacheKey = `unread:${userId}`
+  const uid = await resolveUserId(userId)
+  const cacheKey = `unread:${uid}`
   return cache.wrap(cacheKey, async () => {
-    const count = await messageModel.countDocuments({ toUserId: userId, read: false })
+    const count = await messageModel.countDocuments({ toUserId: uid, read: false })
     return count
   }, CACHE_TTL.UNREAD_COUNT)
 }

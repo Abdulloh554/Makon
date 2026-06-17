@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { validate } from '../../middleware/validate'
 import { authenticate } from '../../middleware/auth'
 import { authRateLimit } from '../../middleware/rateLimit'
-import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.validator'
+import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from '../../validations/auth'
 import * as ctrl from './auth.controller'
 
 const router = Router()
