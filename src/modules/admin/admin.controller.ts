@@ -40,7 +40,7 @@ export async function listUsers(req: Request, res: Response, next: NextFunction)
 
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await adminService.getUser(req.params.id)
+    const user = await adminService.getUser(req.params.id as string)
     sendSuccess(res, user)
   } catch (err) {
     next(err)
@@ -49,7 +49,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
 
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await adminService.deleteUser(req.params.id)
+    const result = await adminService.deleteUser(req.params.id as string)
     sendSuccess(res, result)
   } catch (err) {
     next(err)
@@ -74,7 +74,7 @@ export async function listProperties(req: Request, res: Response, next: NextFunc
 
 export async function deleteProperty(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await adminService.deleteProperty(req.params.id)
+    const result = await adminService.deleteProperty(req.params.id as string)
     sendSuccess(res, result)
   } catch (err) {
     next(err)
@@ -94,7 +94,7 @@ export async function listSellers(req: Request, res: Response, next: NextFunctio
 
 export async function deleteSeller(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await adminService.deleteSeller(req.params.id)
+    const result = await adminService.deleteSeller(req.params.id as string)
     sendSuccess(res, result)
   } catch (err) {
     next(err)
