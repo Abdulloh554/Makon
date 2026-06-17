@@ -17,6 +17,7 @@ export async function connectDB(): Promise<void> {
       await seedMockData()
     } else {
       logger.info('Loaded persisted mock data from disk')
+      await seedMockProperties()
     }
     await mockdb.ensureAdminUser()
     return
@@ -44,6 +45,7 @@ export async function connectDB(): Promise<void> {
           await seedMockData()
         } else {
           logger.info('Loaded persisted mock data from disk')
+          await seedMockProperties()
         }
         await mockdb.ensureAdminUser()
         return
@@ -67,10 +69,10 @@ async function seedMockData(): Promise<void> {
     role: 'user',
   })
   await users.create({
-    firstName: 'Abdulloh',
+    firstName: 'Admin',
     lastName: 'Admin',
-    phone: 'Abdulloh_1404',
-    password: '$2a$10$/InbbN4oXSLDg9199oRkneAW9AZIURIvYK6Pfbzc0Lu4ljQ.RJVBm',
+    phone: 'qwerty',
+    password: '$2a$10$c4vBVt65paQ/ZPAHOGv3DujvzaxaD/vwLVgfCoVZoDOhQS6tZJ0Ue',
     role: 'admin',
   })
 
@@ -83,8 +85,25 @@ async function seedMockData(): Promise<void> {
   })
 
   const properties = createMockModel('Property')
+  await seedProperties(properties)
+
+  logger.info('Mock data seeded successfully')
+}
+
+async function seedMockProperties(): Promise<void> {
+  const { createMockModel } = await import('../lib/mockdb')
+  const properties = createMockModel('Property')
+  const count = await properties.countDocuments()
+  if (count > 0) return
+  await seedProperties(properties)
+  logger.info('Mock properties seeded')
+}
+
+async function seedProperties(model: {
+  create: (data: Record<string, unknown>) => Promise<Record<string, unknown>>
+}): Promise<void> {
   for (let i = 1; i <= 10; i++) {
-    await properties.create({
+    await model.create({
       title: `${i} xonali kvartira Toshkent`,
       description: `Zamonaviy ${i} xonali kvartira.`,
       price: 30000 + i * 5000,
@@ -95,11 +114,10 @@ async function seedMockData(): Promise<void> {
       propertyType: 'apartment',
       dealType: 'sale',
       status: 'active',
+      isActive: true,
       images: [],
     })
   }
-
-  logger.info('Mock data seeded successfully')
 }
 
 async function createIndexes(): Promise<void> {

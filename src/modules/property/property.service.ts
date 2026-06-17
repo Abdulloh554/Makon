@@ -129,6 +129,7 @@ export async function create(data: Record<string, unknown>, userId: string) {
       address: String((data.location as Record<string, unknown>)?.address || '').slice(0, 500),
     },
     images: Array.isArray(data.images) ? data.images.slice(0, 20).map(String) : [],
+    isActive: true,
   }
 
   const property = await propertyModel.create(cleanData)

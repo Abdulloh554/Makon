@@ -37,6 +37,22 @@ export async function listConversations(req: Request, res: Response, next: NextF
   }
 }
 
+export async function list(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const userId = typeof req.query.userId === 'string' ? req.query.userId : ''
+    if (userId) {
+      const messages = await messageService.getMessages(userId, getUserId(req))
+      sendSuccess(res, messages)
+      return
+    }
+
+    const conversations = await messageService.getConversations(getUserId(req))
+    sendSuccess(res, conversations)
+  } catch (err) {
+    next(err)
+  }
+}
+
 export async function getMessages(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const conversationId = req.params.conversationId as string

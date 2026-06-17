@@ -22,6 +22,9 @@ import adminRoutes from './modules/admin/admin.routes'
 
 const app = express()
 
+app.set('etag', false)
+app.disable('x-powered-by')
+
 if (config.sentry.enabled) {
   Sentry.init({
     dsn: config.sentry.dsn,

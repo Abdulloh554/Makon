@@ -144,11 +144,11 @@ export async function ensureAdminUser(): Promise<void> {
   }
   if (hasAdmin) return
 
-  const hash = '$2a$10$/InbbN4oXSLDg9199oRkneAW9AZIURIvYK6Pfbzc0Lu4ljQ.RJVBm'
+  const hash = '$2a$10$c4vBVt65paQ/ZPAHOGv3DujvzaxaD/vwLVgfCoVZoDOhQS6tZJ0Ue'
   const id = generateId()
   const doc: Record<string, unknown> = {
-    _id: id, firstName: 'Abdulloh', lastName: 'Admin',
-    phone: 'Abdulloh_1404', password: hash, role: 'admin', isActive: true, isVerified: true,
+    _id: id, firstName: 'Admin', lastName: 'Admin',
+    phone: 'qwerty', password: hash, role: 'admin', isActive: true, isVerified: true,
   }
   addToJSON(doc)
   adminCol.set(id, doc)
@@ -271,11 +271,24 @@ export function createMockModel(name: string) {
       return { modifiedCount: count }
     },
 
-    async deleteMany(): Promise<{ deletedCount: number }> {
-      const count = col.size
-      col.clear()
-      persist()
-      return { deletedCount: count }
+    async deleteMany(filter?: Record<string, unknown>): Promise<{ deletedCount: number }> {
+      if (!filter || Object.keys(filter).length === 0) {
+        const count = col.size
+        col.clear()
+        persist()
+        return { deletedCount: count }
+      }
+      const toDelete: string[] = []
+      for (const [id, doc] of col.entries()) {
+        if (matchesFilter(doc, filter)) {
+          toDelete.push(id)
+        }
+      }
+      for (const id of toDelete) {
+        col.delete(id)
+      }
+      if (toDelete.length > 0) persist()
+      return { deletedCount: toDelete.length }
     },
   }
 }
