@@ -10,6 +10,7 @@ import { rateLimit } from './middleware/rateLimit'
 import { errorHandler } from './middleware/errorHandler'
 import * as Sentry from '@sentry/node'
 import { clearAllData } from './lib/model'
+import * as path from 'path'
 
 import authRoutes from './modules/auth/auth.routes'
 import propertiesRoutes from './modules/property/property.routes'
@@ -19,6 +20,7 @@ import messagesRoutes from './modules/message/message.routes'
 import paymentRoutes from './modules/payment/payment.routes'
 import telegramRoutes from './modules/telegram/telegram.routes'
 import adminRoutes from './modules/admin/admin.routes'
+import imageRoutes from './modules/image/image.routes'
 
 const app = express()
 
@@ -69,6 +71,8 @@ if (config.isProduction) {
 }
 
 // ─── NoSQL Injection Protection ──────────────────────────────────────
+app.use('/api/uploads', express.static(path.resolve(__dirname, '../uploads')))
+
 app.use(mongoSanitize({
   replaceWith: '_',
   onSanitize: ({ req, key }) => {
@@ -99,6 +103,7 @@ app.use('/api/reviews', reviewsRoutes)
 app.use('/api/messages', messagesRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/images', imageRoutes)
 
 // ─── Reset All Data (development only) ─────────────────────────────
 app.post('/api/reset', async (_req: Request, res: Response) => {

@@ -110,7 +110,7 @@ async function seedProperties(model: {
       currency: 'USD',
       rooms: i,
       area: 40 + i * 10,
-      location: { city: 'Toshkent', address: `Ko'cha ${i}` },
+      location: { lat: 41.31 + i * 0.002, lng: 69.28 + i * 0.003, city: 'Toshkent', address: `Ko'cha ${i}` },
       propertyType: 'apartment',
       dealType: 'sale',
       status: 'active',

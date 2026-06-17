@@ -3,6 +3,79 @@ import { sellerModel } from '../seller/seller.model'
 import { cache } from '../../lib/cache'
 import { NotFoundError, ForbiddenError } from '../../lib/errors'
 import { config } from '../../config'
+import { saveImage as imageSave } from '../image/image.service'
+import * as fs from 'fs'
+import * as path from 'path'
+
+const UPLOADS_DIR = path.resolve(__dirname, '../../uploads')
+
+async function processImage(dataUri: string): Promise<string> {
+  return imageSave(dataUri)
+}
+
+function extractImagePaths(property: Record<string, unknown>): string[] {
+  const images = (property.images as string[]) ?? []
+  const paths = images
+    .filter((url: string) => url.startsWith('/api/uploads/'))
+    .map((url: string) => path.basename(url))
+  if (property.floorPlan && typeof property.floorPlan === 'object') {
+    const fp = property.floorPlan as Record<string, unknown>
+    if (Array.isArray(fp.floors)) {
+      for (const floor of fp.floors as Record<string, unknown>[]) {
+        if (typeof floor.image === 'string' && floor.image.startsWith('/api/uploads/')) {
+          paths.push(path.basename(floor.image as string))
+        }
+        if (Array.isArray(floor.rooms)) {
+          for (const room of floor.rooms as Record<string, unknown>[]) {
+            if (typeof room.image === 'string' && room.image.startsWith('/api/uploads/')) {
+              paths.push(path.basename(room.image as string))
+            }
+          }
+        }
+      }
+    }
+  }
+  return paths
+}
+
+async function processFloorPlanImages(fp: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const floors: Record<string, unknown>[] = []
+  if (Array.isArray(fp.floors)) {
+    for (const floor of fp.floors as Record<string, unknown>[]) {
+      const processedFloor: Record<string, unknown> = { ...floor }
+      if (typeof floor.image === 'string' && floor.image.startsWith('data:')) {
+        processedFloor.image = await processImage(floor.image as string)
+      }
+      if (Array.isArray(floor.rooms)) {
+        processedFloor.rooms = await Promise.all(
+          (floor.rooms as Record<string, unknown>[]).map(async (room) => {
+            const processedRoom = { ...room }
+            if (typeof room.image === 'string' && room.image.startsWith('data:')) {
+              processedRoom.image = await processImage(room.image as string)
+            }
+            return processedRoom
+          })
+        )
+      }
+      floors.push(processedFloor)
+    }
+  }
+  return { floors }
+}
+
+async function cleanupOrphanedImages(oldProperty: Record<string, unknown>, newProperty?: Record<string, unknown>): Promise<void> {
+  const oldPaths = extractImagePaths(oldProperty)
+  const newPaths = newProperty ? extractImagePaths(newProperty) : []
+  const toRemove = oldPaths.filter(p => !newPaths.includes(p))
+  for (const filename of toRemove) {
+    const filepath = path.join(UPLOADS_DIR, filename)
+    try {
+      await fs.promises.unlink(filepath)
+    } catch {
+      // File already removed or not found
+    }
+  }
+}
 
 const CACHE_TTL = {
   PROPERTIES_LIST: 60,
@@ -128,7 +201,10 @@ export async function create(data: Record<string, unknown>, userId: string) {
       lng: Number((data.location as Record<string, unknown>)?.lng) || 0,
       address: String((data.location as Record<string, unknown>)?.address || '').slice(0, 500),
     },
-    images: Array.isArray(data.images) ? data.images.slice(0, 20).map(String) : [],
+    images: Array.isArray(data.images) ? await Promise.all(data.images.slice(0, 20).map(String).map(processImage)) : [],
+    floorPlan: data.floorPlan && typeof data.floorPlan === 'object'
+      ? await processFloorPlanImages(data.floorPlan as Record<string, unknown>)
+      : undefined,
     isActive: true,
   }
 
@@ -153,12 +229,20 @@ export async function update(id: string, data: Record<string, unknown>, userId: 
   const updateData: Record<string, unknown> = {}
   for (const key of allowedFields) {
     if (data[key] !== undefined) {
-      updateData[key] = data[key]
+      if (key === 'images' && Array.isArray(data[key])) {
+        updateData[key] = await Promise.all((data[key] as string[]).map(String).map(processImage))
+      } else if (key === 'floorPlan' && data[key] && typeof data[key] === 'object') {
+        updateData[key] = await processFloorPlanImages(data[key] as Record<string, unknown>)
+      } else {
+        updateData[key] = data[key]
+      }
     }
   }
 
+  const oldProperty = property.toJSON ? property.toJSON() : { ...property } as Record<string, unknown>
   Object.assign(property, updateData)
   await property.save()
+  await cleanupOrphanedImages(oldProperty, updateData)
   await cache.delPattern('properties:*')
   await cache.del(`property:${id}`)
   return toJSON(property)
@@ -175,6 +259,8 @@ export async function deleteProperty(id: string, userId: string) {
     throw new ForbiddenError('Siz faqat o\'z elonlaringizni o\'chirishingiz mumkin.')
   }
 
+  const propertyData = property.toJSON ? property.toJSON() : property
+  await cleanupOrphanedImages(propertyData as Record<string, unknown>)
   await propertyModel.findByIdAndDelete(id)
   await sellerModel.findByIdAndUpdate(sellerId, { $inc: { totalListings: -1 } })
   await cache.delPattern('properties:*')
