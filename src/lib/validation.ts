@@ -22,14 +22,14 @@ export const registerSchema = z.object({
   firstName: z.string().min(1).max(50),
   lastName: z.string().min(1).max(50),
   phone: z.string().min(4).max(20),
-  password: z.string().min(6).max(128),
+  password: z.string().min(8).max(128),
 })
 
 export const propertyCreateSchema = z.object({
   title: z.string().min(2).max(200),
-  description: z.string().min(10).max(5000),
+  description: z.string().max(2000).optional().default(''),
   price: z.number().positive(),
-  images: z.array(z.string().max(5000)).max(20).default([]),
+  images: z.array(z.string().max(5000000)).max(20).default([]),
   location: z.object({
     address: z.string().min(2).max(500),
     lat: z.number().optional(),

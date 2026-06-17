@@ -17,7 +17,7 @@ const propertyCreateSchema = z.object({
     area: z.number().positive('Maydon musbat son bo\'lishi kerak'),
     floor: z.number().int().optional(),
     totalFloors: z.number().int().optional(),
-    images: z.array(z.string()).optional().default([]),
+    images: z.array(z.string().max(5000000)).optional().default([]),
     location: z.object({
       lat: z.number().optional().default(0),
       lng: z.number().optional().default(0),

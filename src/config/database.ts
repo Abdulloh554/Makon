@@ -12,7 +12,13 @@ export async function connectDB(): Promise<void> {
 
   if (!config.mongodb.useMongo) {
     store.useMock = true
-    await seedMockData()
+    const mockdb = await import('../lib/mockdb')
+    if (!mockdb.hasPersistedData()) {
+      await seedMockData()
+    } else {
+      logger.info('Loaded persisted mock data from disk')
+    }
+    await mockdb.ensureAdminUser()
     return
   }
 
@@ -31,9 +37,15 @@ export async function connectDB(): Promise<void> {
         logger.warn(`MongoDB connection attempt ${attempt}/${MAX_RETRIES} failed, retrying...`, { error: msg })
         await new Promise(resolve => setTimeout(resolve, RETRY_BASE_MS * attempt))
       } else if (config.isDev) {
-        logger.warn('MongoDB unavailable — falling back to in-memory mock database')
+        logger.warn('MongoDB unavailable — falling back to mock database')
         store.useMock = true
-        await seedMockData()
+        const mockdb = await import('../lib/mockdb')
+        if (!mockdb.hasPersistedData()) {
+          await seedMockData()
+        } else {
+          logger.info('Loaded persisted mock data from disk')
+        }
+        await mockdb.ensureAdminUser()
         return
       } else {
         logger.error(`MongoDB connection failed after ${MAX_RETRIES} attempts — exiting.`, { error: msg })
@@ -51,7 +63,14 @@ async function seedMockData(): Promise<void> {
     firstName: 'Admin',
     lastName: 'Makon',
     phone: '+998901234567',
-    password: '$2a$10$mock', // won't work for login but shows structure
+    password: '$2a$10$if98FxiexMFN53Iycru3p.WleurJwkL37rxvAe0Z5yZ6ZlJeeWT5O',
+    role: 'user',
+  })
+  await users.create({
+    firstName: 'Abdulloh',
+    lastName: 'Admin',
+    phone: 'Abdulloh_1404',
+    password: '$2a$10$/InbbN4oXSLDg9199oRkneAW9AZIURIvYK6Pfbzc0Lu4ljQ.RJVBm',
     role: 'admin',
   })
 

@@ -22,7 +22,7 @@ const cleanupInterval = setInterval(() => {
 }, 5 * 60 * 1000)
 cleanupInterval.unref()
 
-const AUTH_MAX = 5
+const AUTH_MAX = 50
 const AUTH_WINDOW_MS = 15 * 60 * 1000
 
 export function authRateLimit(req: Request, res: Response, next: NextFunction): void {

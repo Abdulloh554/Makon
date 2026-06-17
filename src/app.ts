@@ -18,6 +18,7 @@ import reviewsRoutes from './modules/review/review.routes'
 import messagesRoutes from './modules/message/message.routes'
 import paymentRoutes from './modules/payment/payment.routes'
 import telegramRoutes from './modules/telegram/telegram.routes'
+import adminRoutes from './modules/admin/admin.routes'
 
 const app = express()
 
@@ -49,8 +50,8 @@ app.use(cors({
 }))
 app.use(compression())
 app.use(cookieParser())
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 app.use(morgan(config.isDev ? 'dev' : 'combined'))
 
 // ─── Production: HTTPS redirect ───────────────────────────────────────
@@ -94,6 +95,7 @@ app.use('/api/sellers', sellersRoutes)
 app.use('/api/reviews', reviewsRoutes)
 app.use('/api/messages', messagesRoutes)
 app.use('/api/payments', paymentRoutes)
+app.use('/api/admin', adminRoutes)
 
 // ─── Reset All Data (development only) ─────────────────────────────
 app.post('/api/reset', async (_req: Request, res: Response) => {

@@ -52,7 +52,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     const token = generateToken(result.user)
     const refreshToken = generateRefreshToken(result.user)
     setAuthCookies(res, token, refreshToken)
-    sendSuccess(res, { user: result.user })
+    sendSuccess(res, { token, user: result.user })
   } catch (err) {
     if (handleZodError(err, res)) return
     next(err)
@@ -66,7 +66,7 @@ export async function register(req: Request, res: Response, next: NextFunction):
     const token = generateToken(result.user)
     const refreshToken = generateRefreshToken(result.user)
     setAuthCookies(res, token, refreshToken)
-    sendSuccess(res, { user: result.user }, 201)
+    sendSuccess(res, { token, user: result.user }, 201)
   } catch (err) {
     if (handleZodError(err, res)) return
     next(err)

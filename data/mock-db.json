@@ -1,0 +1,63 @@
+{
+  "Plan": {
+    "mock_1_1781636329843": {
+      "_id": "mock_1_1781636329843",
+      "name": "Premium Listing",
+      "description": "1 hafta birinchi sahifada",
+      "price": 5,
+      "currency": "USD",
+      "durationDays": 7,
+      "features": [
+        "Birinchi sahifa",
+        "Featured badge",
+        "Statistika"
+      ],
+      "isActive": true,
+      "createdAt": "2026-06-16T18:58:49.843Z",
+      "updatedAt": "2026-06-16T18:58:49.843Z"
+    },
+    "mock_2_1781636329844": {
+      "_id": "mock_2_1781636329844",
+      "name": "Featured Badge",
+      "description": "3 kun featured badge",
+      "price": 2,
+      "currency": "USD",
+      "durationDays": 3,
+      "features": [
+        "Featured badge"
+      ],
+      "isActive": true,
+      "createdAt": "2026-06-16T18:58:49.844Z",
+      "updatedAt": "2026-06-16T18:58:49.844Z"
+    },
+    "mock_3_1781636329844": {
+      "_id": "mock_3_1781636329844",
+      "name": "Agent Pro",
+      "description": "1 oy unlimited listing + verified badge",
+      "price": 20,
+      "currency": "USD",
+      "durationDays": 30,
+      "features": [
+        "Unlimited e'lon",
+        "Verified badge",
+        "Priority support",
+        "Analytics"
+      ],
+      "isActive": true,
+      "createdAt": "2026-06-16T18:58:49.844Z",
+      "updatedAt": "2026-06-16T18:58:49.844Z"
+    }
+  },
+  "User": {
+    "mock_4_1781670594482": {
+      "_id": "mock_4_1781670594482",
+      "firstName": "Abdulloh",
+      "lastName": "Admin",
+      "phone": "Abdulloh_1404",
+      "password": "$2a$10$wn4ejYc.5/3n4uhTGO9cSONDddBGiyeQwyLcwgMctGJsEVCfF9J8i",
+      "role": "admin",
+      "isActive": true,
+      "isVerified": true
+    }
+  }
+}

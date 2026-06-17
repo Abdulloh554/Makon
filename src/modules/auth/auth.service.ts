@@ -42,6 +42,7 @@ export async function register(firstName: string, lastName: string, phone: strin
   const user = await userModel.create({
     firstName,
     lastName,
+    name: `${firstName} ${lastName}`,
     phone,
     password: hashedPassword,
   })
