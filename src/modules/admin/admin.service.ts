@@ -133,6 +133,55 @@ export async function listMessages(page: number, limit: number) {
   return { data: messages.map((m: any) => (typeof m.toJSON === 'function' ? m.toJSON() : m)), total, page, totalPages: Math.ceil(total / limit) }
 }
 
+export async function migratePropertyImages(): Promise<{ fixed: number; total: number }> {
+  const { saveImage } = await import('../image/image.service')
+  const properties = await (propertyModel as any).find({}).toArray()
+  const total = properties.length
+  let fixed = 0
+
+  for (const doc of properties) {
+    const raw = typeof doc.toJSON === 'function' ? doc.toJSON() : doc
+    let images = raw.images
+    let needsUpdate = false
+
+    if (typeof images === 'string') {
+      images = [images]
+      needsUpdate = true
+    }
+
+    if (!Array.isArray(images)) {
+      images = []
+      needsUpdate = true
+    }
+
+    const processed = await Promise.all(
+      (images as string[]).map(async (url: string) => {
+        if (typeof url === 'string' && url.startsWith('data:')) {
+          needsUpdate = true
+          return saveImage(url)
+        }
+        if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/api/uploads/'))) {
+          return url
+        }
+        if (typeof url === 'string' && url.trim()) {
+          return url
+        }
+        return ''
+      })
+    )
+
+    const cleaned = processed.filter(Boolean)
+
+    if (needsUpdate || JSON.stringify(raw.images) !== JSON.stringify(cleaned)) {
+      const id = String(raw._id ?? raw.id ?? '')
+      await (propertyModel as any).findByIdAndUpdate(id, { $set: { images: cleaned } })
+      fixed++
+    }
+  }
+
+  return { fixed, total }
+}
+
 export async function listReviews(page: number, limit: number) {
   const skip = (page - 1) * limit
   const reviews = await (reviewModel as any).find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray()

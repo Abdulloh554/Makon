@@ -198,7 +198,14 @@ export async function create(data: Record<string, unknown>, userId: string) {
       lng: Number((data.location as Record<string, unknown>)?.lng) || 0,
       address: String((data.location as Record<string, unknown>)?.address || '').slice(0, 500),
     },
-    images: Array.isArray(data.images) ? await Promise.all(data.images.slice(0, 20).map(String).map(processImage)) : [],
+    images: await Promise.all(
+      (Array.isArray(data.images)
+        ? (data.images as unknown[]).slice(0, 20).map(String)
+        : typeof data.images === 'string'
+          ? [data.images as string]
+          : []
+      ).map(processImage)
+    ),
     floorPlan: data.floorPlan && typeof data.floorPlan === 'object'
       ? await processFloorPlanImages(data.floorPlan as Record<string, unknown>)
       : undefined,
@@ -226,8 +233,11 @@ export async function update(id: string, data: Record<string, unknown>, userId: 
   const updateData: Record<string, unknown> = {}
   for (const key of allowedFields) {
     if (data[key] !== undefined) {
-      if (key === 'images' && Array.isArray(data[key])) {
-        updateData[key] = await Promise.all((data[key] as string[]).map(String).map(processImage))
+      if (key === 'images') {
+        const raw = data[key]
+        updateData[key] = await Promise.all(
+          (Array.isArray(raw) ? (raw as unknown[]).map(String) : typeof raw === 'string' ? [raw as string] : []).map(processImage)
+        )
       } else if (key === 'floorPlan' && data[key] && typeof data[key] === 'object') {
         updateData[key] = await processFloorPlanImages(data[key] as Record<string, unknown>)
       } else {

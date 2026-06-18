@@ -67,8 +67,18 @@
       "phone": "+998942633350",
       "password": "$2a$10$eu99JsTW3cNvaRtGnLiYDeeNnYtpxg1Qcko6d7wOLL46XYh2uB3Pu",
       "createdAt": "2026-06-17T10:18:57.955Z",
-      "updatedAt": "2026-06-17T11:05:18.501Z",
-      "lastLoginAt": "2026-06-17T11:05:18.500Z"
+      "updatedAt": "2026-06-18T06:04:23.632Z",
+      "lastLoginAt": "2026-06-18T06:04:23.632Z"
+    },
+    "mock_26_1781762619793": {
+      "_id": "mock_26_1781762619793",
+      "firstName": "Ali",
+      "lastName": "asdfghjkl",
+      "name": "Ali asdfghjkl",
+      "phone": "+998998303823",
+      "password": "$2a$10$L6feNSgs3BgpsHetjfohFOzofxDLYsr1ejdqcO1XdqSuNIHAs06yC",
+      "createdAt": "2026-06-18T06:03:39.793Z",
+      "updatedAt": "2026-06-18T06:03:39.793Z"
     }
   },
   "Seller": {
@@ -82,10 +92,22 @@
       "totalListings": 0,
       "joinedAt": "2026-06-17T10:18:57.958Z",
       "createdAt": "2026-06-17T10:18:57.958Z",
-      "updatedAt": "2026-06-17T13:51:27.502Z",
+      "updatedAt": "2026-06-17T17:00:02.549Z",
       "$inc": {
         "totalListings": 1
       }
+    },
+    "mock_27_1781762619795": {
+      "_id": "mock_27_1781762619795",
+      "userId": "mock_26_1781762619793",
+      "name": "Ali asdfghjkl",
+      "phone": "+998998303823",
+      "avatar": "/avatars/user.svg",
+      "rating": 5,
+      "totalListings": 0,
+      "joinedAt": "2026-06-18T06:03:39.795Z",
+      "createdAt": "2026-06-18T06:03:39.795Z",
+      "updatedAt": "2026-06-18T06:03:39.795Z"
     }
   },
   "Property": {
@@ -140,9 +162,44 @@
       "isActive": true,
       "createdAt": "2026-06-17T13:51:27.499Z",
       "updatedAt": "2026-06-17T13:51:27.499Z"
+    },
+    "mock_25_1781715602548": {
+      "_id": "mock_25_1781715602548",
+      "sellerId": "mock_16_1781691537958",
+      "title": "sdfgtyuio",
+      "description": "exdcrfvtgyhujik",
+      "price": 234567889,
+      "type": "apartment",
+      "dealType": "sale",
+      "status": "ready",
+      "rooms": 2,
+      "area": 479,
+      "floor": 1,
+      "totalFloors": 5,
+      "location": {
+        "lat": 41.31304530006099,
+        "lng": 69.27589273433114,
+        "address": "wertyuidrftyu"
+      },
+      "images": [
+        "/api/uploads/a8fcce8306812cf8498f539b688411e0.jpeg"
+      ],
+      "isActive": true,
+      "createdAt": "2026-06-17T17:00:02.548Z",
+      "updatedAt": "2026-06-17T17:00:02.548Z"
     }
   },
-  "Message": {},
+  "Message": {
+    "mock_28_1781762630242": {
+      "_id": "mock_28_1781762630242",
+      "fromUserId": "mock_26_1781762619793",
+      "toUserId": "mock_15_1781691537955",
+      "propertyId": "general",
+      "text": "test",
+      "createdAt": "2026-06-18T06:03:50.242Z",
+      "updatedAt": "2026-06-18T06:03:50.242Z"
+    }
+  },
   "Review": {
     "mock_22_1781695756703": {
       "_id": "mock_22_1781695756703",

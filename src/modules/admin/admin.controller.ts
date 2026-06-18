@@ -112,6 +112,15 @@ export async function listMessages(req: Request, res: Response, next: NextFuncti
   }
 }
 
+export async function migrateImages(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await adminService.migratePropertyImages()
+    sendSuccess(res, result)
+  } catch (err) {
+    next(err)
+  }
+}
+
 export async function listReviews(req: Request, res: Response, next: NextFunction) {
   try {
     const page = Math.max(1, Number(req.query.page) || 1)

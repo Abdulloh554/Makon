@@ -30,6 +30,13 @@ function createConfig() {
     SENTRY_ENABLED: z.string().default('false'),
     LOG_LEVEL: z.string().default(isProduction ? 'info' : 'debug'),
     TELEGRAM_BOT_TOKEN: z.string().default('your-telegram-bot-token'),
+
+    SMTP_HOST: z.string().default('smtp.gmail.com'),
+    SMTP_PORT: z.coerce.number().default(587),
+    SMTP_USER: z.string().default(''),
+    SMTP_PASS: z.string().default(''),
+    EMAIL_FROM: z.string().default('noreply@makon.uz'),
+    NOTIFICATION_EMAIL: z.string().default(''),
   })
 
   const parsed = configSchema.safeParse(process.env)
@@ -87,6 +94,17 @@ export const config = {
   },
 
   telegramBotToken: env.TELEGRAM_BOT_TOKEN,
+
+  email: {
+    smtp: {
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASS,
+    },
+    from: env.EMAIL_FROM,
+    notificationEmail: env.NOTIFICATION_EMAIL,
+  },
 } as const
 
 export type Config = typeof config

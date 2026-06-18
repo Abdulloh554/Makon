@@ -3,6 +3,7 @@ import { sellerModel } from '../seller/seller.model'
 import { cache } from '../../utils/cache'
 import { NotFoundError } from '../../utils/errors'
 
+
 const CACHE_TTL = {
   UNREAD_COUNT: 30,
 } as const
@@ -40,16 +41,27 @@ export async function list(userId: string, currentUserId: string) {
 }
 
 export async function create(data: { toUserId: string; propertyId: string; text: string }, fromUserId: string) {
+  console.log('[MESSAGE] create called:', { toUserId: data.toUserId, fromUserId, propertyId: data.propertyId })
+
   const resolvedTo = await resolveUserId(data.toUserId)
   const resolvedFrom = await resolveUserId(fromUserId)
+
+  console.log('[MESSAGE] resolved IDs:', { resolvedTo, resolvedFrom })
+
   const message = await messageModel.create({
     fromUserId: resolvedFrom,
     toUserId: resolvedTo,
     propertyId: data.propertyId || 'general',
     text: data.text,
   })
+
+  const saved = await toJSON(message)
+  console.log('[MESSAGE] saved to DB:', { id: saved._id ?? saved.id })
+
   await cache.del(`unread:${resolvedTo}`)
-  return toJSON(message)
+  console.log('[MESSAGE] cache cleared for unread:', resolvedTo)
+
+  return saved
 }
 
 export async function send(fromUserId: string, toUserId: string, propertyId: string, text: string) {
