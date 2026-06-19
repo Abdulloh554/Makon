@@ -12,7 +12,7 @@ async function toJSON(doc: Record<string, unknown>): Promise<Record<string, unkn
   return typeof doc.toJSON === 'function' ? doc.toJSON() : doc
 }
 
-async function resolveUserId(id: string): Promise<string> {
+export async function resolveUserId(id: string): Promise<string> {
   const seller = await sellerModel.findOne({ _id: id }).catch(() => null)
   if (seller) {
     const userId = String((seller as Record<string, unknown>).userId ?? '')

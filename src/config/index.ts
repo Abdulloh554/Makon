@@ -30,6 +30,7 @@ function createConfig() {
     SENTRY_ENABLED: z.string().default('false'),
     LOG_LEVEL: z.string().default(isProduction ? 'info' : 'debug'),
     TELEGRAM_BOT_TOKEN: z.string().default('your-telegram-bot-token'),
+    GOOGLE_CLIENT_ID: z.string().default('810857223764-aie957kpv4dhr8tco3m9959e057qn9ij.apps.googleusercontent.com'),
 
     SMTP_HOST: z.string().default('smtp.gmail.com'),
     SMTP_PORT: z.coerce.number().default(587),
@@ -94,6 +95,9 @@ export const config = {
   },
 
   telegramBotToken: env.TELEGRAM_BOT_TOKEN,
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID,
+  },
 
   email: {
     smtp: {

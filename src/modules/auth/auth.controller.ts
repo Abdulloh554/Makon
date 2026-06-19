@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import * as authService from './auth.service'
+import { googleLogin as googleAuthService } from './auth.google'
 import { sendSuccess, sendError } from '../../utils/response'
 import { config } from '../../config'
 import { loginSchema, registerSchema } from '../../validations/index'
@@ -137,6 +138,23 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
     const { token, password } = req.body
     const result = await authService.resetPassword(token, password)
     sendSuccess(res, result)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export async function googleLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { idToken } = req.body
+    if (!idToken) {
+      sendError(res, 400, 'VALIDATION_ERROR', 'Google ID token talab qilinadi.')
+      return
+    }
+    const result = await googleAuthService(idToken)
+    const token = generateToken(result.user)
+    const refreshToken = generateRefreshToken(result.user)
+    setAuthCookies(res, token, refreshToken)
+    sendSuccess(res, { token, user: result.user })
   } catch (err) {
     next(err)
   }

@@ -7,6 +7,7 @@ import * as ctrl from './auth.controller'
 
 const router = Router()
 
+router.post('/google', authRateLimit, ctrl.googleLogin)
 router.post('/login', authRateLimit, validate(loginSchema), ctrl.login)
 router.post('/register', authRateLimit, validate(registerSchema), ctrl.register)
 router.post('/refresh', authRateLimit, ctrl.refresh)

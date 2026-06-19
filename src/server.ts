@@ -20,6 +20,10 @@ async function start(): Promise<void> {
       })
     })
 
+    const { initSocket } = await import('./services/socket')
+    initSocket(server)
+    logger.info('Socket.IO initialized')
+
     // Connect DB and Redis in background (non-blocking)
     connectDB().catch(err => logger.error('Database connection failed', { error: String(err) }))
     connectRedis().catch(err => logger.error('Redis connection failed', { error: String(err) }))

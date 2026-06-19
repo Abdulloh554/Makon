@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express'
 import * as messageService from './message.service'
 import { sendSuccess, sendError } from '../../utils/response'
 import { messageCreateSchema } from '../../validations/index'
+import { emitNewMessage } from '../../services/socket'
 import { ZodError } from 'zod'
 
 function getUserId(req: Request): string {
@@ -21,6 +22,7 @@ export async function send(req: Request, res: Response, next: NextFunction): Pro
   try {
     const data = messageCreateSchema.parse(req.body)
     const message = await messageService.create(data, getUserId(req))
+    emitNewMessage(message as Record<string, unknown>)
     sendSuccess(res, message, 201)
   } catch (err) {
     if (handleZodError(err, res)) return
