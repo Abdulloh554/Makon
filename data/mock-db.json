@@ -79,6 +79,19 @@
       "password": "$2a$10$L6feNSgs3BgpsHetjfohFOzofxDLYsr1ejdqcO1XdqSuNIHAs06yC",
       "createdAt": "2026-06-18T06:03:39.793Z",
       "updatedAt": "2026-06-18T06:03:39.793Z"
+    },
+    "mock_29_1781847191582": {
+      "_id": "mock_29_1781847191582",
+      "provider": "google",
+      "googleId": "106055689531417196862",
+      "email": "abdullokg14@gmail.com",
+      "name": "Abdulloh",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "role": "user",
+      "isVerified": true,
+      "isActive": true,
+      "createdAt": "2026-06-19T05:33:11.583Z",
+      "updatedAt": "2026-06-19T05:33:11.583Z"
     }
   },
   "Seller": {
@@ -108,6 +121,18 @@
       "joinedAt": "2026-06-18T06:03:39.795Z",
       "createdAt": "2026-06-18T06:03:39.795Z",
       "updatedAt": "2026-06-18T06:03:39.795Z"
+    },
+    "mock_30_1781847191585": {
+      "_id": "mock_30_1781847191585",
+      "userId": "mock_29_1781847191582",
+      "name": "Abdulloh",
+      "phone": "",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "rating": 5,
+      "totalListings": 0,
+      "joinedAt": "2026-06-19T05:33:11.585Z",
+      "createdAt": "2026-06-19T05:33:11.585Z",
+      "updatedAt": "2026-06-19T05:33:11.585Z"
     }
   },
   "Property": {

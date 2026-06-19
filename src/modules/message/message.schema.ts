@@ -7,4 +7,6 @@ export const messageSchemaDef: SchemaDefinition = {
   text: { type: String, required: true, trim: true, maxlength: 1000 },
   read: { type: Boolean, default: false },
   readAt: { type: Date },
+  edited: { type: Boolean, default: false },
+  editedAt: { type: Date },
 }

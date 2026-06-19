@@ -130,6 +130,40 @@ export async function markRead(id: string, userId: string) {
   return toJSON(message)
 }
 
+export async function updateMessage(messageId: string, text: string, userId: string) {
+  const message = await messageModel.findById(messageId)
+  if (!message) throw new NotFoundError('Message not found')
+
+  const fromId = String(message.fromUserId)
+  const resolved = await resolveUserId(fromId)
+  const uid = await resolveUserId(userId)
+  if (resolved !== uid) throw new NotFoundError('Message not found')
+
+  message.text = text
+  message.edited = true
+  message.editedAt = new Date()
+  await message.save()
+
+  const saved = await toJSON(message)
+  return saved
+}
+
+export async function deleteMessage(messageId: string, userId: string) {
+  const message = await messageModel.findById(messageId)
+  if (!message) throw new NotFoundError('Message not found')
+
+  const fromId = String(message.fromUserId)
+  const resolved = await resolveUserId(fromId)
+  const uid = await resolveUserId(userId)
+  if (resolved !== uid) throw new NotFoundError('Message not found')
+
+  const fromUserId = String(message.fromUserId)
+  const toUserId = String(message.toUserId)
+
+  await messageModel.findByIdAndDelete(messageId)
+  return { id: messageId, fromUserId, toUserId }
+}
+
 export async function getUnreadCount(userId: string) {
   const uid = await resolveUserId(userId)
   const cacheKey = `unread:${uid}`

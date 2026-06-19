@@ -69,7 +69,8 @@ export function initSocket(httpServer: HttpServer): Server {
 
     socket.on('typing_start', (data: { toUserId: string }) => {
       if (!data.toUserId) return
-      io?.to(`user:${data.toUserId}`).emit('user:typing', {
+      const room = getConversationRoom(userId, data.toUserId)
+      socket.to(room).emit('user:typing', {
         fromUserId: userId,
         isTyping: true,
       })
@@ -77,7 +78,8 @@ export function initSocket(httpServer: HttpServer): Server {
 
     socket.on('typing_stop', (data: { toUserId: string }) => {
       if (!data.toUserId) return
-      io?.to(`user:${data.toUserId}`).emit('user:typing', {
+      const room = getConversationRoom(userId, data.toUserId)
+      socket.to(room).emit('user:typing', {
         fromUserId: userId,
         isTyping: false,
       })
@@ -115,6 +117,23 @@ export async function emitNewMessage(message: Record<string, unknown>) {
 
   const unreadCount = await messageModel.countDocuments({ toUserId: toId, read: false })
   io?.to(`user:${toId}`).emit('unread_count', { count: unreadCount })
+}
+
+export async function emitUpdateMessage(message: Record<string, unknown>) {
+  const fromId = String(message.fromUserId ?? '')
+  const toId = String(message.toUserId ?? '')
+  if (!fromId || !toId) return
+
+  const room = getConversationRoom(fromId, toId)
+  io?.to(room).emit('message_updated', message)
+}
+
+export async function emitDeleteMessage(data: { messageId: string; fromUserId: string; toUserId: string }) {
+  const { messageId, fromUserId, toUserId } = data
+  if (!fromUserId || !toUserId || !messageId) return
+
+  const room = getConversationRoom(fromUserId, toUserId)
+  io?.to(room).emit('message_deleted', { messageId })
 }
 
 export function isUserOnline(userId: string): boolean {
