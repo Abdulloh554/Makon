@@ -1,15 +1,22 @@
-export const PROPERTY_TYPES = ['apartment', 'house', 'cottage', 'dacha', 'commercial', 'land'] as const
-export const DEAL_TYPES = ['daily', 'sale', 'rent', 'installment'] as const
-export const PROPERTY_STATUSES = ['ready', 'half-ready', 'land', 'sold'] as const
-export const USER_ROLES = ['user', 'seller', 'admin'] as const
+/**
+ * @file index.ts
+ * @layer Backend Constants
+ * @responsibility Re-exports shared constants for backward compatibility
+ */
 
-export const ERROR_CODES = {
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  NOT_FOUND: 'NOT_FOUND',
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  FORBIDDEN: 'FORBIDDEN',
-  CONFLICT: 'CONFLICT',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-  QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
-} as const
+export { ERROR_CODES } from '@shared/types/api.types'
+export type { ErrorCode } from '@shared/types/api.types'
+
+export {
+  PROPERTY_TYPES,
+  DEAL_TYPES,
+  PROPERTY_STATUSES,
+} from '@shared/types/property.types'
+export type {
+  PropertyType,
+  DealType,
+  PropertyStatus,
+} from '@shared/types/property.types'
+
+export { USER_ROLES } from '@shared/types/user.types'
+export type { UserRole } from '@shared/types/user.types'

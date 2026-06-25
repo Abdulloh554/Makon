@@ -1,7 +1,7 @@
 import { sellerModel } from './seller.model'
 import { propertyModel } from '../property/property.model'
 import { cache } from '../../utils/cache'
-import { NotFoundError } from '../../utils/errors'
+import { NotFoundError } from '../../errors/AppError'
 
 const CACHE_TTL = {
   SELLERS_LIST: 60,

@@ -1,7 +1,7 @@
 import { messageModel } from './message.model'
 import { sellerModel } from '../seller/seller.model'
 import { cache } from '../../utils/cache'
-import { NotFoundError } from '../../utils/errors'
+import { NotFoundError } from '../../errors/AppError'
 
 
 const CACHE_TTL = {
@@ -41,25 +41,22 @@ export async function list(userId: string, currentUserId: string) {
 }
 
 export async function create(data: { toUserId: string; propertyId: string; text: string }, fromUserId: string) {
-  console.log('[MESSAGE] create called:', { toUserId: data.toUserId, fromUserId, propertyId: data.propertyId })
-
   const resolvedTo = await resolveUserId(data.toUserId)
   const resolvedFrom = await resolveUserId(fromUserId)
 
-  console.log('[MESSAGE] resolved IDs:', { resolvedTo, resolvedFrom })
+  const conversationId = [resolvedFrom, resolvedTo].sort().join(':')
 
   const message = await messageModel.create({
     fromUserId: resolvedFrom,
     toUserId: resolvedTo,
+    conversationId,
     propertyId: data.propertyId || 'general',
     text: data.text,
   })
 
   const saved = await toJSON(message)
-  console.log('[MESSAGE] saved to DB:', { id: saved._id ?? saved.id })
 
   await cache.del(`unread:${resolvedTo}`)
-  console.log('[MESSAGE] cache cleared for unread:', resolvedTo)
 
   return saved
 }
@@ -68,17 +65,37 @@ export async function send(fromUserId: string, toUserId: string, propertyId: str
   return create({ toUserId, propertyId, text }, fromUserId)
 }
 
+async function resolveUserIdsBatched(ids: string[]): Promise<Map<string, string>> {
+  const uniqueIds = [...new Set(ids)]
+  const sellers = await sellerModel.find({ $or: [{ _id: { $in: uniqueIds } }, { userId: { $in: uniqueIds } }] })
+  const resolved = new Map<string, string>()
+  for (const id of uniqueIds) {
+    resolved.set(id, id)
+  }
+  for (const seller of sellers) {
+    const sellerId = String(seller._id ?? seller.id ?? '')
+    const userId = String(seller.userId ?? '')
+    if (userId) resolved.set(sellerId, userId)
+  }
+  return resolved
+}
+
 export async function getConversations(userId: string) {
   const uid = await resolveUserId(userId)
   const messages = await messageModel.find({
     $or: [{ fromUserId: uid }, { toUserId: uid }],
   }).sort({ createdAt: -1 })
 
+  const otherIds = messages.map((msg: Record<string, unknown>) =>
+    String(msg.fromUserId) === uid ? String(msg.toUserId) : String(msg.fromUserId),
+  )
+  const userIdMap = await resolveUserIdsBatched(otherIds)
+
   const conversationMap = new Map<string, Record<string, unknown>>()
 
   for (const msg of messages) {
     const otherRaw = String(msg.fromUserId) === uid ? String(msg.toUserId) : String(msg.fromUserId)
-    const otherId = await resolveUserId(otherRaw)
+    const otherId = userIdMap.get(otherRaw) ?? otherRaw
     if (!conversationMap.has(otherId)) {
       conversationMap.set(otherId, {
         id: otherId,
@@ -107,14 +124,11 @@ export async function getMessages(conversationId: string, userId: string) {
   }
   const messages = await messageModel.find(filter).sort({ createdAt: 1 })
 
-  // Mark messages as read
-  for (const msg of messages) {
-    if (String(msg.toUserId) === uid && !msg.read) {
-      msg.read = true
-      msg.readAt = new Date()
-      await msg.save()
-    }
-  }
+  // Bulk mark messages as read
+  await messageModel.updateMany(
+    { $or: filter.$or, toUserId: uid, read: false },
+    { read: true, readAt: new Date() },
+  )
 
   await cache.del(`unread:${uid}`)
   return Promise.all(messages.map(toJSON))

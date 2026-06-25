@@ -4,7 +4,7 @@ import { propertyModel } from '../property/property.model'
 import { messageModel } from '../message/message.model'
 import { reviewModel } from '../review/review.model'
 import { cache } from '../../utils/cache'
-import { NotFoundError } from '../../utils/errors'
+import { NotFoundError } from '../../errors/AppError'
 import bcrypt from 'bcryptjs'
 
 export async function login(username: string, password: string) {
@@ -18,6 +18,7 @@ export async function login(username: string, password: string) {
   if (role !== 'admin') throw new NotFoundError('Admin huquqi yo\'q')
 
   const json = { ...(typeof user.toJSON === 'function' ? user.toJSON() : user) }
+  if (!json.id && json._id) json.id = String(json._id)
   delete json.password
   return json
 }
@@ -116,11 +117,7 @@ export async function listSellers(page: number, limit: number) {
 export async function deleteSeller(id: string) {
   const seller = await sellerModel.findById(id)
   if (!seller) throw new NotFoundError('Sotuvchi topilmadi')
-  const props = await propertyModel.find({ sellerId: id })
-  for (const p of props) {
-    const pid = String((p as any)._id ?? (p as any).id ?? '')
-    await propertyModel.findByIdAndDelete(pid)
-  }
+  await propertyModel.deleteMany({ sellerId: id })
   await sellerModel.findByIdAndDelete(id)
   await cache.delPattern('properties:*')
   return { message: 'Sotuvchi va uning elonlari o\'chirildi' }

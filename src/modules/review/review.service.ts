@@ -1,7 +1,7 @@
 import { reviewModel } from './review.model'
 import { sellerModel } from '../seller/seller.model'
 import { cache } from '../../utils/cache'
-import { NotFoundError } from '../../utils/errors'
+import { NotFoundError } from '../../errors/AppError'
 
 const CACHE_TTL = {
   REVIEWS_LIST: 60,
@@ -39,10 +39,12 @@ export async function create(data: {
   const review = await reviewModel.create(data)
   const created = await toJSON(review)
 
-  // Update seller rating
-  const allReviews = await reviewModel.find({ sellerId: data.sellerId })
-  const totalRating = allReviews.reduce((sum: number, r: Record<string, unknown>) => sum + Number(r.rating), 0)
-  const avgRating = Math.round((totalRating / allReviews.length) * 10) / 10
+  // Update seller rating using aggregation
+  const [stats] = await (reviewModel as any).aggregate([
+    { $match: { sellerId: data.sellerId } },
+    { $group: { _id: null, avgRating: { $avg: '$rating' } } },
+  ])
+  const avgRating = stats ? Math.round(stats.avgRating * 10) / 10 : data.rating
 
   await sellerModel.findByIdAndUpdate(data.sellerId, {
     $set: { rating: avgRating },

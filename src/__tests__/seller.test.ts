@@ -8,17 +8,18 @@ describe('Sellers API', () => {
   beforeAll(async () => {
     const salt = await bcrypt.genSalt(10)
     const hashed = await bcrypt.hash('password123', salt)
+    const phone = `+9989000${String(Math.random()).slice(2, 7)}`
     const user = await userModel.create({
       firstName: 'Test',
       lastName: 'User',
-      phone: '+998901234567',
+      phone,
       password: hashed,
     })
     const userId = String(user._id)
     await sellerModel.create({
       userId,
       name: 'Test Seller',
-      phone: '+998901234567',
+      phone,
       rating: 5.0,
       totalListings: 3,
     })

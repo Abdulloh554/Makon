@@ -13,18 +13,6 @@ export const propertyQuerySchema = z.object({
   sortOrder: z.enum(['asc', 'desc']).optional(),
 })
 
-export const loginSchema = z.object({
-  phone: z.string().min(4).max(20),
-  password: z.string().min(4).max(128),
-})
-
-export const registerSchema = z.object({
-  firstName: z.string().min(1).max(50),
-  lastName: z.string().min(1).max(50),
-  phone: z.string().min(4).max(20),
-  password: z.string().min(8).max(128),
-})
-
 export const propertyCreateSchema = z.object({
   title: z.string().min(2).max(200),
   description: z.string().max(2000).optional().default(''),

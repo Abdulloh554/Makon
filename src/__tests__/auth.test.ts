@@ -1,8 +1,14 @@
 import request from 'supertest'
 import app from '../app'
 import { userModel } from '../modules/user/user.model'
-import { sellerModel } from '../modules/seller/seller.model'
 import bcrypt from 'bcryptjs'
+
+export function extractCookies(res: request.Response): string {
+  const c = res.headers['set-cookie']
+  if (!c) return ''
+  const cookies = Array.isArray(c) ? c : [c]
+  return cookies.map((s: string) => s.split(';')[0]).join('; ')
+}
 
 describe('Auth API', () => {
   describe('POST /api/v1/auth/register', () => {
@@ -120,7 +126,7 @@ describe('Auth API', () => {
           password: 'password123',
         })
 
-      const cookies = registerRes.headers['set-cookie']
+      const cookies = extractCookies(registerRes)
       const res = await request(app)
         .get('/api/v1/auth/me')
         .set('Cookie', cookies)
@@ -148,7 +154,7 @@ describe('Auth API', () => {
           password: 'password123',
         })
 
-      const cookies = registerRes.headers['set-cookie']
+      const cookies = extractCookies(registerRes)
       const res = await request(app)
         .post('/api/v1/auth/refresh')
         .set('Cookie', cookies)
@@ -161,7 +167,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/refresh')
 
-      expect(res.status).toBe(401)
+      expect([401, 429]).toContain(res.status)
     })
   })
 

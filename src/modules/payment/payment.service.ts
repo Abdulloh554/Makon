@@ -2,7 +2,7 @@ import { planModel } from './plan.model'
 import { subscriptionModel } from './subscription.model'
 import { paymentModel } from './payment.model'
 import { propertyModel } from '../property/property.model'
-import { NotFoundError, ConflictError } from '../../utils/errors'
+import { NotFoundError, ConflictError } from '../../errors/AppError'
 
 const PLANS = [
   { name: 'Premium Listing', description: '1 hafta birinchi sahifada', price: 5, currency: 'USD' as const, durationDays: 7, features: ['Birinchi sahifa', 'Featured badge', 'Statistika'] },

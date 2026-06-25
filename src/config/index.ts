@@ -1,102 +1,115 @@
+/**
+ * @file env.ts
+ * @layer Config
+ * @responsibility Zod-validated environment variables — crashes on startup if invalid
+ */
+
 import dotenv from 'dotenv'
 import { z } from 'zod'
 
 dotenv.config()
 
-function createConfig() {
-  const isProduction = process.env.NODE_ENV === 'production'
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  const configSchema = z.object({
-    PORT: z.coerce.number().default(4000),
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    MONGODB_URI: z.string().default('mongodb://localhost:27017/makon'),
-    USE_MONGO: z.string().default(isProduction ? 'true' : 'true'),
-    JWT_SECRET: isProduction
-      ? z.string().min(32, 'Production da JWT_SECRET kamida 32 belgidan iborat bo\'lishi kerak')
-      : z.string().min(1).default('dev_jwt_secret_key_not_for_production_' + Date.now()),
-    JWT_EXPIRES_IN: z.string().default('15m'),
-    JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
-    JWT_REFRESH_SECRET: isProduction
-      ? z.string().min(32)
-      : z.string().min(1).default('dev_refresh_secret_key_for_development_only'),
-    REDIS_URL: z.string().default('redis://localhost:6379'),
-    REDIS_ENABLED: z.string().default('true'),
-    CORS_ORIGIN: isProduction
-      ? z.string().min(1, 'Production da CORS_ORIGIN aniq ko\'rsatilishi kerak').refine(v => v !== '*', { message: 'Production da CORS_ORIGIN * bo\'lishi mumkin emas' })
-      : z.string().default('http://localhost:3000'),
-    RATE_LIMIT_MAX: z.coerce.number().default(isProduction ? 30 : 100),
-    RATE_LIMIT_WINDOW_MS: z.coerce.number().default(15 * 60 * 1000),
-    SENTRY_DSN: z.string().default(''),
-    SENTRY_ENABLED: z.string().default('false'),
-    LOG_LEVEL: z.string().default(isProduction ? 'info' : 'debug'),
-    TELEGRAM_BOT_TOKEN: z.string().default('your-telegram-bot-token'),
-    GOOGLE_CLIENT_ID: z.string().default('810857223764-aie957kpv4dhr8tco3m9959e057qn9ij.apps.googleusercontent.com'),
+  PORT: z.coerce.number().int().positive().max(65535).default(4000),
 
-    SMTP_HOST: z.string().default('smtp.gmail.com'),
-    SMTP_PORT: z.coerce.number().default(587),
-    SMTP_USER: z.string().default(''),
-    SMTP_PASS: z.string().default(''),
-    EMAIL_FROM: z.string().default('noreply@makon.uz'),
-    NOTIFICATION_EMAIL: z.string().default(''),
-  })
+  MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
+  MONGODB_URI_TEST: z.string().optional(),
 
-  const parsed = configSchema.safeParse(process.env)
+  REDIS_ENABLED: z.string().default('false'),
+  REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
 
-  if (!parsed.success) {
-    console.error('Invalid configuration:', parsed.error.flatten().fieldErrors)
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
+  JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
+  JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+
+  CORS_ORIGIN: z.string().refine(
+    (val) => val !== '*',
+    { message: 'CORS_ORIGIN cannot be wildcard in production' },
+  ).default('http://localhost:3000'),
+
+  CSRF_SECRET: z.string().min(32, 'CSRF_SECRET must be at least 32 characters'),
+
+  SMTP_HOST: z.string().default('smtp.gmail.com'),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().default(''),
+  SMTP_PASS: z.string().default(''),
+  EMAIL_FROM: z.string().email().default('noreply@makon.uz'),
+
+  SENTRY_DSN: z.string().default(''),
+  SENTRY_ENABLED: z.string().default('false'),
+
+  TELEGRAM_BOT_TOKEN: z.string().default(''),
+  GOOGLE_CLIENT_ID: z.string().default(''),
+
+  STRIPE_SECRET_KEY: z.string().default(''),
+  STRIPE_WEBHOOK_SECRET: z.string().default(''),
+
+  AWS_ACCESS_KEY_ID: z.string().default(''),
+  AWS_SECRET_ACCESS_KEY: z.string().default(''),
+  AWS_S3_BUCKET: z.string().default(''),
+  AWS_REGION: z.string().default('eu-central-1'),
+}).superRefine((data, ctx) => {
+  if (data.NODE_ENV === 'production') {
+    if (!data.SMTP_USER || !data.SMTP_PASS) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'SMTP credentials are required in production',
+        path: ['SMTP_USER'],
+      })
+    }
+  }
+})
+
+function validateEnv(): z.infer<typeof envSchema> {
+  const result = envSchema.safeParse(process.env)
+
+  if (!result.success) {
+    console.error('❌ Invalid environment variables:')
+    for (const issue of result.error.issues) {
+      console.error(`  - ${issue.path.join('.')}: ${issue.message}`)
+    }
     process.exit(1)
   }
 
-  return parsed.data
+  return result.data
 }
 
-const env = createConfig()
+const env = validateEnv()
 
 export const config = {
-  port: env.PORT,
   nodeEnv: env.NODE_ENV,
   isDev: env.NODE_ENV === 'development',
   isTest: env.NODE_ENV === 'test',
   isProduction: env.NODE_ENV === 'production',
 
+  port: env.PORT,
+
   mongodb: {
     uri: env.MONGODB_URI,
-    useMongo: env.USE_MONGO === 'true',
+    testUri: env.MONGODB_URI_TEST,
+  },
+
+  redis: {
+    enabled: env.REDIS_ENABLED === 'true',
+    url: env.REDIS_URL,
   },
 
   jwt: {
     secret: env.JWT_SECRET,
-    expiresIn: env.JWT_EXPIRES_IN,
     refreshSecret: env.JWT_REFRESH_SECRET,
+    accessExpiresIn: env.JWT_ACCESS_EXPIRES_IN,
     refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
-  },
-
-  redis: {
-    url: env.REDIS_URL,
-    enabled: env.REDIS_ENABLED === 'true',
   },
 
   cors: {
     origin: env.CORS_ORIGIN,
   },
 
-  rateLimit: {
-    windowMs: env.RATE_LIMIT_WINDOW_MS,
-    max: env.RATE_LIMIT_MAX,
-  },
-
-  sentry: {
-    dsn: env.SENTRY_DSN,
-    enabled: env.SENTRY_ENABLED === 'true',
-  },
-
-  log: {
-    level: env.LOG_LEVEL,
-  },
-
-  telegramBotToken: env.TELEGRAM_BOT_TOKEN,
-  google: {
-    clientId: env.GOOGLE_CLIENT_ID,
+  csrf: {
+    secret: env.CSRF_SECRET,
   },
 
   email: {
@@ -107,7 +120,26 @@ export const config = {
       pass: env.SMTP_PASS,
     },
     from: env.EMAIL_FROM,
-    notificationEmail: env.NOTIFICATION_EMAIL,
+  },
+
+  sentry: {
+    dsn: env.SENTRY_DSN,
+    enabled: env.SENTRY_ENABLED === 'true',
+  },
+
+  telegramBotToken: env.TELEGRAM_BOT_TOKEN,
+  googleClientId: env.GOOGLE_CLIENT_ID,
+
+  stripe: {
+    secretKey: env.STRIPE_SECRET_KEY,
+    webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+  },
+
+  aws: {
+    accessKeyId: env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+    s3Bucket: env.AWS_S3_BUCKET,
+    region: env.AWS_REGION,
   },
 } as const
 

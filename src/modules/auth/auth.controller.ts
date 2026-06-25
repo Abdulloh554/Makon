@@ -1,166 +1,212 @@
+/**
+ * @file auth.controller.ts
+ * @layer Controller
+ * @responsibility Parse HTTP request, call auth service, set cookies, return response
+ */
+
 import type { Request, Response, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
-import * as authService from './auth.service'
-import { googleLogin as googleAuthService } from './auth.google'
-import { sendSuccess, sendError } from '../../utils/response'
+import { authService } from './auth.service'
+import { generateCsrfToken } from '../../middleware/csrf.middleware'
 import { config } from '../../config'
-import { loginSchema, registerSchema } from '../../validations/index'
-import { ZodError } from 'zod'
-import { generateToken, generateRefreshToken } from '../../middleware/auth'
 
-function getUserId(req: Request): string {
-  return (req as unknown as { userId: string }).userId
-}
+const ACCESS_COOKIE_MAX_AGE = 15 * 60 * 1000
+const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000
 
-const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000 // 15 daqiqa
-const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000 // 7 kun
-
-function setAuthCookies(res: Response, token: string, refreshToken: string): void {
-  res.cookie('token', token, {
+function setAuthCookies(
+  res: Response,
+  accessToken: string,
+  refreshToken: string,
+): void {
+  res.cookie('access_token', accessToken, {
     httpOnly: true,
     secure: config.isProduction,
-    sameSite: 'lax',
-    maxAge: ACCESS_TOKEN_MAX_AGE,
+    sameSite: 'strict',
+    maxAge: ACCESS_COOKIE_MAX_AGE,
     path: '/',
   })
+
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
     secure: config.isProduction,
-    sameSite: 'lax',
-    maxAge: REFRESH_TOKEN_MAX_AGE,
-    path: '/',
+    sameSite: 'strict',
+    maxAge: REFRESH_COOKIE_MAX_AGE,
+    path: '/api/v1/auth/refresh',
   })
 }
 
 function clearAuthCookies(res: Response): void {
-  res.clearCookie('token', { path: '/' })
-  res.clearCookie('refresh_token', { path: '/' })
+  res.clearCookie('access_token', { path: '/' })
+  res.clearCookie('refresh_token', { path: '/api/v1/auth/refresh' })
+  res.clearCookie('csrf-token', { path: '/' })
 }
 
-function handleZodError(err: unknown, res: Response): boolean {
-  if (err instanceof ZodError) {
-    const messages = err.errors.map(e => `${e.path.join('.')}: ${e.message}`)
-    sendError(res, 400, 'VALIDATION_ERROR', messages.join('; '))
-    return true
-  }
-  return false
-}
+export const authController = {
+  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { phone, password } = req.body as { phone: string; password: string }
+      const result = await authService.login(phone, password)
 
-export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { phone, password } = loginSchema.parse(req.body)
-    const result = await authService.login(phone, password)
-    const token = generateToken(result.user)
-    const refreshToken = generateRefreshToken(result.user)
-    setAuthCookies(res, token, refreshToken)
-    sendSuccess(res, { token, user: result.user })
-  } catch (err) {
-    if (handleZodError(err, res)) return
-    next(err)
-  }
-}
+      setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
 
-export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { firstName, lastName, phone, password } = registerSchema.parse(req.body)
-    const result = await authService.register(firstName, lastName, phone, password)
-    const token = generateToken(result.user)
-    const refreshToken = generateRefreshToken(result.user)
-    setAuthCookies(res, token, refreshToken)
-    sendSuccess(res, { token, user: result.user }, 201)
-  } catch (err) {
-    if (handleZodError(err, res)) return
-    next(err)
-  }
-}
+      const csrfToken = generateCsrfToken(req, res)
 
-export async function refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const refreshTokenStr = req.cookies?.refresh_token
-    if (!refreshTokenStr) {
-      sendError(res, 401, 'NO_REFRESH_TOKEN', 'Refresh token topilmadi.')
-      return
+      res.status(200).json({
+        success: true,
+        data: {
+          user: result.user,
+          csrfToken,
+        },
+      })
+    } catch (err) {
+      next(err)
     }
+  },
 
-    const decoded = jwt.verify(refreshTokenStr, config.jwt.refreshSecret) as { id: string; phone: string; type: string }
-    if (decoded.type !== 'refresh') {
-      sendError(res, 401, 'INVALID_TOKEN', 'Yaroqsiz refresh token.')
-      return
+  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { firstName, lastName, phone, password } = req.body as {
+        firstName: string
+        lastName: string
+        phone: string
+        password: string
+      }
+
+      const result = await authService.register(firstName, lastName, phone, password)
+
+      setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
+
+      const csrfToken = generateCsrfToken(req, res)
+
+      res.status(201).json({
+        success: true,
+        data: {
+          user: result.user,
+          csrfToken,
+        },
+      })
+    } catch (err) {
+      next(err)
     }
+  },
 
-    const result = await authService.me(decoded.id)
-    const newToken = generateToken(result)
-    const newRefreshToken = generateRefreshToken(result)
+  async refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const refreshToken = req.cookies?.refresh_token
 
-    setAuthCookies(res, newToken, newRefreshToken)
-    sendSuccess(res, { user: result })
-  } catch (err) {
-    if (err instanceof jwt.TokenExpiredError) {
+      if (!refreshToken) {
+        res.status(401).json({
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: 'Refresh token not found.' },
+        })
+        return
+      }
+
+      const result = await authService.refresh(refreshToken)
+
+      setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
+
+      const csrfToken = generateCsrfToken(req, res)
+
+      res.status(200).json({
+        success: true,
+        data: {
+          user: result.user,
+          csrfToken,
+        },
+      })
+    } catch (err) {
+      if (err instanceof Error && (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError')) {
+        res.status(401).json({
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid or expired refresh token.' },
+        })
+        return
+      }
+      next(err)
+    }
+  },
+
+  async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const refreshToken = req.cookies?.refresh_token
+
+      if (refreshToken) {
+        await authService.logout(refreshToken)
+      }
+
       clearAuthCookies(res)
-      sendError(res, 401, 'REFRESH_EXPIRED', 'Sessiya muddati o\'tgan. Qayta kiring.')
-      return
+
+      res.status(200).json({
+        success: true,
+        data: { message: 'Logged out successfully.' },
+      })
+    } catch (err) {
+      next(err)
     }
-    next(err)
-  }
-}
+  },
 
-export async function me(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const user = await authService.me(getUserId(req))
-    sendSuccess(res, user)
-  } catch (err) {
-    next(err)
-  }
-}
-
-export async function deleteAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const result = await authService.deleteAccount(getUserId(req))
-    clearAuthCookies(res)
-    sendSuccess(res, result)
-  } catch (err) {
-    next(err)
-  }
-}
-
-export async function forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { phone } = req.body
-    const result = await authService.forgotPassword(phone)
-    sendSuccess(res, result)
-  } catch (err) {
-    next(err)
-  }
-}
-
-export async function resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { token, password } = req.body
-    const result = await authService.resetPassword(token, password)
-    sendSuccess(res, result)
-  } catch (err) {
-    next(err)
-  }
-}
-
-export async function googleLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { idToken } = req.body
-    if (!idToken) {
-      sendError(res, 400, 'VALIDATION_ERROR', 'Google ID token talab qilinadi.')
-      return
+  async google(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { idToken } = req.body as { idToken: string }
+      if (!idToken) {
+        res.status(400).json({
+          success: false,
+          error: { code: 'VALIDATION', message: 'idToken is required.' },
+        })
+        return
+      }
+      const result = await authService.google(idToken)
+      setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
+      const csrfToken = generateCsrfToken(req, res)
+      res.status(200).json({
+        success: true,
+        data: { user: result.user, csrfToken },
+      })
+    } catch (err) {
+      next(err)
     }
-    const result = await googleAuthService(idToken)
-    const token = generateToken(result.user)
-    const refreshToken = generateRefreshToken(result.user)
-    setAuthCookies(res, token, refreshToken)
-    sendSuccess(res, { token, user: result.user })
-  } catch (err) {
-    next(err)
-  }
-}
+  },
 
-export async function logout(_req: Request, res: Response): Promise<void> {
-  clearAuthCookies(res)
-  sendSuccess(res, { message: 'Tizimdan chiqildi.' })
+  async me(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.userId!
+
+      const user = await authService.me(userId)
+
+      res.status(200).json({
+        success: true,
+        data: user,
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+
+  async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { phone } = req.body as { phone: string }
+      const result = await authService.forgotPassword(phone)
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+
+  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { token, password } = req.body as { token: string; password: string }
+      const result = await authService.resetPassword(token, password)
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
 }

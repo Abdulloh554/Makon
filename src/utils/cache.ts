@@ -1,4 +1,4 @@
-import { getRedisClient } from '../config/redis'
+import { getRedisClient } from '../database/redis'
 import { logger } from './logger'
 
 const memoryCache = new Map<string, { data: unknown; expires: number }>()

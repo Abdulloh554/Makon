@@ -1,6 +1,22 @@
 import type { Request, Response, NextFunction } from 'express'
+import Stripe from 'stripe'
 import * as paymentService from './payment.service'
 import { sendSuccess, sendError } from '../../utils/response'
+import { config } from '../../config'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let stripe: any = null
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getStripe(): any {
+  if (!stripe) {
+    if (!config.stripe.secretKey) {
+      throw new Error('Stripe secret key not configured')
+    }
+    stripe = new Stripe(config.stripe.secretKey, { apiVersion: '2026-05-27.dahlia' })
+  }
+  return stripe
+}
 
 function getUserId(req: Request): string {
   return (req as unknown as { userId: string }).userId
@@ -55,14 +71,31 @@ export async function handleClickWebhook(req: Request, res: Response, _next: Nex
 
 export async function handleStripeWebhook(req: Request, res: Response, _next: NextFunction): Promise<void> {
   try {
-    const event = req.body
+    const sig = req.headers['stripe-signature'] as string
+    if (!sig) {
+      res.status(400).json({ error: 'Missing stripe-signature header' })
+      return
+    }
+
+    if (!config.stripe.webhookSecret) {
+      res.status(500).json({ error: 'Stripe webhook secret not configured' })
+      return
+    }
+
+    const event = getStripe().webhooks.constructEvent(
+      req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body)),
+      sig,
+      config.stripe.webhookSecret,
+    )
+
     if (event.type === 'checkout.session.completed') {
-      const transactionId = event.data.object.id
+      const session = event.data.object as { id: string }
+      const transactionId = session.id
       await paymentService.confirmPayment(transactionId)
     }
     res.json({ received: true })
   } catch (err) {
-    res.status(400).json({ error: String(err) })
+    res.status(400).json({ error: `Webhook signature verification failed: ${err instanceof Error ? err.message : 'Unknown error'}` })
   }
 }
 

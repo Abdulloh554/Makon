@@ -1,18 +1,16 @@
 import mongoose from 'mongoose'
-import { config } from '../config'
+import { store } from '../database/store'
 
 beforeAll(async () => {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/makon_test'
-  await mongoose.connect(uri)
+  process.env.NODE_ENV = 'test'
+  store.useMock = true
 })
 
 afterAll(async () => {
-  await mongoose.disconnect()
+  await mongoose.disconnect().catch(() => {})
 })
 
 afterEach(async () => {
-  const collections = mongoose.connection.collections
-  for (const key in collections) {
-    await collections[key].deleteMany({})
-  }
+  const { clearAllMockData } = require('../database/mockdb')
+  await clearAllMockData()
 })

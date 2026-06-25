@@ -1,7 +1,7 @@
 import { propertyModel } from './property.model'
 import { sellerModel } from '../seller/seller.model'
 import { cache } from '../../utils/cache'
-import { NotFoundError, ForbiddenError } from '../../utils/errors'
+import { NotFoundError, ForbiddenError } from '../../errors/AppError'
 import { saveImage as imageSave, UPLOADS_DIR } from '../image/image.service'
 import * as fs from 'fs'
 import * as path from 'path'

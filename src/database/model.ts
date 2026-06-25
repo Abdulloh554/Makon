@@ -1,5 +1,5 @@
 import mongoose, { type SchemaDefinition } from 'mongoose'
-import { store as dbStore } from '../config/database'
+import { store as dbStore } from './store'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Doc = any
@@ -21,11 +21,13 @@ export interface ModelInterface {
 }
 
 function getBackend(): 'mock' | 'mongo' {
-  // Use mock if explicitly set OR if mongoose is not connected
   if (dbStore.useMock) return 'mock'
   if (mongoose.connection.readyState === 1) return 'mongo'
-  // mongoose is not connected and mock not requested — still return 'mock'
-  // to prevent mongoose buffering timeouts
+  const { NODE_ENV } = process.env
+  if (NODE_ENV === 'production') {
+    throw new Error('MongoDB is not connected. Cannot operate in production without a database.')
+  }
+  // Dev/test: fall back to mock to prevent mongoose buffering timeouts
   return 'mock'
 }
 
@@ -58,6 +60,8 @@ function ensureMockModel(name: string): any {
   return mock
 }
 
+const READ_METHODS = new Set(['find', 'findOne', 'findById'])
+
 export function createModel(name: string, schemaDef: SchemaDefinition): ModelInterface {
   const handler: ProxyHandler<ModelInterface> = {
     get(_target, prop: string | symbol) {
@@ -66,7 +70,13 @@ export function createModel(name: string, schemaDef: SchemaDefinition): ModelInt
 
       const value = actualModel[prop]
       if (typeof value === 'function') {
-        return (...args: unknown[]) => value.apply(actualModel, args)
+        return (...args: unknown[]) => {
+          const result = value.apply(actualModel, args)
+          if (typeof prop === 'string' && READ_METHODS.has(prop)) {
+            return result.lean ? result.lean() : result
+          }
+          return result
+        }
       }
       return value
     },

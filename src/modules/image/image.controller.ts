@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as imageService from './image.service'
 import { sendSuccess, sendError } from '../../utils/response'
+import { propertyModel } from '../property/property.model'
+import { sellerModel } from '../seller/seller.model'
 
 export async function upload(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -37,6 +39,22 @@ export async function getInfo(req: Request, res: Response, next: NextFunction): 
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const hash = String(req.params.hash)
+    const userId = (req as unknown as { userId: string }).userId
+
+    const property = await (propertyModel as any).findOne({
+      images: { $regex: hash },
+    })
+
+    if (property) {
+      const seller = await sellerModel.findOne({ userId })
+      const sellerId = String(seller?._id ?? seller?.id ?? '')
+      const propertySellerId = String(property.sellerId ?? '')
+      if (!seller || propertySellerId !== sellerId) {
+        sendError(res, 403, 'FORBIDDEN', 'Siz faqat o\'z elonlaringizdagi rasmlarni o\'chirishingiz mumkin.')
+        return
+      }
+    }
+
     const deleted = await imageService.deleteImage(hash)
     if (!deleted) {
       sendError(res, 404, 'NOT_FOUND', 'Rasm topilmadi.')

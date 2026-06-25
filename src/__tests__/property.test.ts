@@ -12,7 +12,9 @@ describe('Properties API', () => {
 
   function extractCookies(res: request.Response): string {
     const c = res.headers['set-cookie']
-    return Array.isArray(c) ? c.join('; ') : (c || '')
+    if (!c) return ''
+    const cookies = Array.isArray(c) ? c : [c]
+    return cookies.map((s: string) => s.split(';')[0]).join('; ')
   }
 
   beforeEach(async () => {
@@ -24,10 +26,10 @@ describe('Properties API', () => {
       phone: '+998901234567',
       password: hashed,
     })
-    const userId = String(user._id)
+    const regUserId = String(user._id)
 
     const seller = await sellerModel.create({
-      userId,
+      userId: regUserId,
       name: 'Test Seller',
       phone: '+998901234567',
       rating: 5.0,
@@ -35,22 +37,35 @@ describe('Properties API', () => {
     })
     sellerId = String(seller._id)
 
+    const apiPhone = `+9989000${String(Math.random()).slice(2, 7)}`
     const registerRes = await request(app)
       .post('/api/v1/auth/register')
       .send({
         firstName: 'Test',
         lastName: 'User',
-        phone: '+998901234568',
+        phone: apiPhone,
         password: 'password123',
       })
+
+    expect(registerRes.status).toBe(201)
+
+    const apiUserId = registerRes.body.data.user.id
     cookies = extractCookies(registerRes)
+
+    await sellerModel.create({
+      userId: apiUserId,
+      name: 'Test Seller',
+      phone: apiPhone,
+      rating: 5.0,
+      totalListings: 0,
+    })
   })
 
   describe('POST /api/v1/properties', () => {
     it('should create a property', async () => {
       const res = await request(app)
         .post('/api/v1/properties')
-        .set('Cookie', [cookies])
+        .set('Cookie', cookies)
         .send({
           title: 'Test Property',
           description: 'A nice test property with good location',
@@ -76,7 +91,7 @@ describe('Properties API', () => {
     it('should reject property with missing required fields', async () => {
       const res = await request(app)
         .post('/api/v1/properties')
-        .set('Cookie', [cookies])
+        .set('Cookie', cookies)
         .send({
           title: 'Test',
         })
@@ -98,6 +113,7 @@ describe('Properties API', () => {
           status: 'ready',
           rooms: 2 + i,
           area: 50 + i * 10,
+          isActive: true,
           location: { address: 'Toshkent', lat: 41.3, lng: 69.2 },
         })
       }
@@ -148,6 +164,7 @@ describe('Properties API', () => {
         status: 'ready',
         rooms: 3,
         area: 75,
+        isActive: true,
         location: { address: 'Toshkent', lat: 41.3, lng: 69.2 },
       })
       propertyId = String(prop._id)
@@ -181,6 +198,7 @@ describe('Properties API', () => {
         status: 'ready',
         rooms: 3,
         area: 75,
+        isActive: true,
         location: { address: 'Toshkent', lat: 41.3, lng: 69.2 },
       })
       propertyId = String(prop._id)
@@ -189,7 +207,7 @@ describe('Properties API', () => {
     it('should delete own property', async () => {
       const res = await request(app)
         .delete(`/api/v1/properties/${propertyId}`)
-        .set('Cookie', [cookies])
+        .set('Cookie', cookies)
 
       expect(res.status).toBe(200)
     })

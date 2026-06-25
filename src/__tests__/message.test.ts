@@ -6,7 +6,9 @@ describe('Messages API', () => {
 
   function extractCookies(res: request.Response): string {
     const c = res.headers['set-cookie']
-    return Array.isArray(c) ? c.join('; ') : (c || '')
+    if (!c) return ''
+    const cookies = Array.isArray(c) ? c : [c]
+    return cookies.map((s: string) => s.split(';')[0]).join('; ')
   }
 
   beforeEach(async () => {
@@ -25,7 +27,7 @@ describe('Messages API', () => {
     it('should send a message', async () => {
       const res = await request(app)
         .post('/api/v1/messages')
-        .set('Cookie', [cookies])
+        .set('Cookie', cookies)
         .send({
           toUserId: '507f1f77bcf86cd799439011',
           propertyId: 'general',
@@ -39,7 +41,7 @@ describe('Messages API', () => {
     it('should reject message without text', async () => {
       const res = await request(app)
         .post('/api/v1/messages')
-        .set('Cookie', [cookies])
+        .set('Cookie', cookies)
         .send({
           toUserId: '507f1f77bcf86cd799439011',
           propertyId: 'general',
@@ -54,7 +56,7 @@ describe('Messages API', () => {
     it('should return unread count', async () => {
       const res = await request(app)
         .get('/api/v1/messages/unread')
-        .set('Cookie', [cookies])
+        .set('Cookie', cookies)
 
       expect(res.status).toBe(200)
       expect(typeof res.body.unread).toBe('number')

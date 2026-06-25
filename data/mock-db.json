@@ -1,240 +1,69 @@
 {
-  "Plan": {
-    "mock_1_1781636329843": {
-      "_id": "mock_1_1781636329843",
-      "name": "Premium Listing",
-      "description": "1 hafta birinchi sahifada",
-      "price": 5,
-      "currency": "USD",
-      "durationDays": 7,
-      "features": [
-        "Birinchi sahifa",
-        "Featured badge",
-        "Statistika"
-      ],
-      "isActive": true,
-      "createdAt": "2026-06-16T18:58:49.843Z",
-      "updatedAt": "2026-06-16T18:58:49.843Z"
-    },
-    "mock_2_1781636329844": {
-      "_id": "mock_2_1781636329844",
-      "name": "Featured Badge",
-      "description": "3 kun featured badge",
-      "price": 2,
-      "currency": "USD",
-      "durationDays": 3,
-      "features": [
-        "Featured badge"
-      ],
-      "isActive": true,
-      "createdAt": "2026-06-16T18:58:49.844Z",
-      "updatedAt": "2026-06-16T18:58:49.844Z"
-    },
-    "mock_3_1781636329844": {
-      "_id": "mock_3_1781636329844",
-      "name": "Agent Pro",
-      "description": "1 oy unlimited listing + verified badge",
-      "price": 20,
-      "currency": "USD",
-      "durationDays": 30,
-      "features": [
-        "Unlimited e'lon",
-        "Verified badge",
-        "Priority support",
-        "Analytics"
-      ],
-      "isActive": true,
-      "createdAt": "2026-06-16T18:58:49.844Z",
-      "updatedAt": "2026-06-16T18:58:49.844Z"
-    }
-  },
   "User": {
-    "mock_4_1781670594482": {
-      "_id": "mock_4_1781670594482",
-      "firstName": "Admin",
-      "lastName": "Admin",
-      "phone": "qwerty",
-      "password": "$2a$10$c4vBVt65paQ/ZPAHOGv3DujvzaxaD/vwLVgfCoVZoDOhQS6tZJ0Ue",
-      "role": "admin",
-      "isActive": true,
-      "isVerified": true
-    },
-    "mock_15_1781691537955": {
-      "_id": "mock_15_1781691537955",
-      "firstName": "Abdulloh",
-      "lastName": "G'ofurjonov",
-      "name": "Abdulloh G'ofurjonov",
-      "phone": "+998942633350",
-      "password": "$2a$10$eu99JsTW3cNvaRtGnLiYDeeNnYtpxg1Qcko6d7wOLL46XYh2uB3Pu",
-      "createdAt": "2026-06-17T10:18:57.955Z",
-      "updatedAt": "2026-06-18T06:04:23.632Z",
-      "lastLoginAt": "2026-06-18T06:04:23.632Z"
-    },
-    "mock_26_1781762619793": {
-      "_id": "mock_26_1781762619793",
-      "firstName": "Ali",
-      "lastName": "asdfghjkl",
-      "name": "Ali asdfghjkl",
-      "phone": "+998998303823",
-      "password": "$2a$10$L6feNSgs3BgpsHetjfohFOzofxDLYsr1ejdqcO1XdqSuNIHAs06yC",
-      "createdAt": "2026-06-18T06:03:39.793Z",
-      "updatedAt": "2026-06-18T06:03:39.793Z"
-    },
-    "mock_29_1781847191582": {
-      "_id": "mock_29_1781847191582",
+    "mock_1_1782110918286": {
+      "_id": "mock_1_1782110918286",
       "provider": "google",
-      "googleId": "106055689531417196862",
-      "email": "abdullokg14@gmail.com",
-      "name": "Abdulloh",
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "googleId": "112864407845575196398",
+      "email": "gofurjonovabdulloh551@gmail.com",
+      "name": "Abdulloh Gofurjonov",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJUuwi-T5nMWfUmHV9V7hocPypmKnHNr2qCgsX2MgvwYplk6Q=s96-c",
       "role": "user",
       "isVerified": true,
       "isActive": true,
-      "createdAt": "2026-06-19T05:33:11.583Z",
-      "updatedAt": "2026-06-19T05:33:11.583Z"
+      "createdAt": "2026-06-22T06:48:38.286Z",
+      "updatedAt": "2026-06-22T06:48:38.286Z"
+    },
+    "mock_3_1782199999824": {
+      "_id": "mock_3_1782199999824",
+      "firstName": "Abdulloh",
+      "lastName": "rwvewrvgrew",
+      "phone": "+998993456789",
+      "password": "$2a$12$fYo5CZOybtR7Y0s.OG89SO9SUAcbPTWmfRxWYPkg42j58iRJUCIQ6",
+      "name": "Abdulloh rwvewrvgrew",
+      "role": "user",
+      "provider": "local",
+      "createdAt": "2026-06-23T07:33:19.824Z",
+      "updatedAt": "2026-06-23T07:33:19.824Z"
+    },
+    "mock_4_1782200140817": {
+      "_id": "mock_4_1782200140817",
+      "firstName": "Ali",
+      "lastName": "gcdviwevfbuwe",
+      "phone": "+998998765432",
+      "password": "$2a$12$zUBJVwNog0Hs7hJxbqkmYeQ0LT/XB3YufhSo8fqmsHAdT6bpSM86W",
+      "name": "Ali gcdviwevfbuwe",
+      "role": "user",
+      "provider": "local",
+      "createdAt": "2026-06-23T07:35:40.817Z",
+      "updatedAt": "2026-06-23T07:35:40.817Z"
+    },
+    "mock_5_1782200314214": {
+      "_id": "mock_5_1782200314214",
+      "firstName": "Abdulloh",
+      "lastName": "Qodirov",
+      "phone": "+998998303823",
+      "password": "$2a$12$9n1cznJ1E9itWIBhb6yiAO41qZmP5cur.XnKls/IrX3OonHTY5bl.",
+      "name": "Abdulloh Qodirov",
+      "role": "user",
+      "provider": "local",
+      "createdAt": "2026-06-23T07:38:34.214Z",
+      "updatedAt": "2026-06-23T07:38:34.214Z"
     }
   },
   "Seller": {
-    "mock_16_1781691537958": {
-      "_id": "mock_16_1781691537958",
-      "userId": "mock_15_1781691537955",
-      "name": "Abdulloh G'ofurjonov",
-      "phone": "+998942633350",
-      "avatar": "/avatars/user.svg",
-      "rating": 5,
-      "totalListings": 0,
-      "joinedAt": "2026-06-17T10:18:57.958Z",
-      "createdAt": "2026-06-17T10:18:57.958Z",
-      "updatedAt": "2026-06-17T17:00:02.549Z",
-      "$inc": {
-        "totalListings": 1
-      }
-    },
-    "mock_27_1781762619795": {
-      "_id": "mock_27_1781762619795",
-      "userId": "mock_26_1781762619793",
-      "name": "Ali asdfghjkl",
-      "phone": "+998998303823",
-      "avatar": "/avatars/user.svg",
-      "rating": 5,
-      "totalListings": 0,
-      "joinedAt": "2026-06-18T06:03:39.795Z",
-      "createdAt": "2026-06-18T06:03:39.795Z",
-      "updatedAt": "2026-06-18T06:03:39.795Z"
-    },
-    "mock_30_1781847191585": {
-      "_id": "mock_30_1781847191585",
-      "userId": "mock_29_1781847191582",
-      "name": "Abdulloh",
+    "mock_2_1782110918287": {
+      "_id": "mock_2_1782110918287",
+      "userId": "mock_1_1782110918286",
+      "name": "Abdulloh Gofurjonov",
       "phone": "",
-      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJUuwi-T5nMWfUmHV9V7hocPypmKnHNr2qCgsX2MgvwYplk6Q=s96-c",
       "rating": 5,
       "totalListings": 0,
-      "joinedAt": "2026-06-19T05:33:11.585Z",
-      "createdAt": "2026-06-19T05:33:11.585Z",
-      "updatedAt": "2026-06-19T05:33:11.585Z"
+      "joinedAt": "2026-06-22T06:48:38.287Z",
+      "createdAt": "2026-06-22T06:48:38.287Z",
+      "updatedAt": "2026-06-22T06:48:38.287Z"
     }
   },
-  "Property": {
-    "mock_23_1781698461508": {
-      "_id": "mock_23_1781698461508",
-      "sellerId": "mock_16_1781691537958",
-      "title": "wertyuiop",
-      "description": "edrftghjxdcfvgbhnjm",
-      "price": 100000,
-      "type": "apartment",
-      "dealType": "sale",
-      "status": "ready",
-      "rooms": 2,
-      "area": 500,
-      "floor": 1,
-      "totalFloors": 5,
-      "location": {
-        "lat": 41.3113763450742,
-        "lng": 69.28237295131112,
-        "address": "wertyuiodfghj"
-      },
-      "images": [
-        "/api/uploads/8a889315d0658da2415477003d6068f4.jpeg",
-        "/api/uploads/df51da4c25263841890a85bf290b2128.jpeg"
-      ],
-      "isActive": true,
-      "createdAt": "2026-06-17T12:14:21.508Z",
-      "updatedAt": "2026-06-17T12:14:21.508Z"
-    },
-    "mock_24_1781704287499": {
-      "_id": "mock_24_1781704287499",
-      "sellerId": "mock_16_1781691537958",
-      "title": "23456789sdfghjkl",
-      "description": "swedrftgyhjsdfghj",
-      "price": 2345678,
-      "type": "apartment",
-      "dealType": "sale",
-      "status": "ready",
-      "rooms": 2,
-      "area": 500,
-      "floor": 1,
-      "totalFloors": 5,
-      "location": {
-        "lat": 41.31238417324429,
-        "lng": 69.28122496585274,
-        "address": "asdfghjkl"
-      },
-      "images": [
-        "/api/uploads/701a65f0a510f30757db4329288a9383.jpeg",
-        "/api/uploads/70359ff8f50745337da29db4a6e308c0.jpeg"
-      ],
-      "isActive": true,
-      "createdAt": "2026-06-17T13:51:27.499Z",
-      "updatedAt": "2026-06-17T13:51:27.499Z"
-    },
-    "mock_25_1781715602548": {
-      "_id": "mock_25_1781715602548",
-      "sellerId": "mock_16_1781691537958",
-      "title": "sdfgtyuio",
-      "description": "exdcrfvtgyhujik",
-      "price": 234567889,
-      "type": "apartment",
-      "dealType": "sale",
-      "status": "ready",
-      "rooms": 2,
-      "area": 479,
-      "floor": 1,
-      "totalFloors": 5,
-      "location": {
-        "lat": 41.31304530006099,
-        "lng": 69.27589273433114,
-        "address": "wertyuidrftyu"
-      },
-      "images": [
-        "/api/uploads/a8fcce8306812cf8498f539b688411e0.jpeg"
-      ],
-      "isActive": true,
-      "createdAt": "2026-06-17T17:00:02.548Z",
-      "updatedAt": "2026-06-17T17:00:02.548Z"
-    }
-  },
-  "Message": {
-    "mock_28_1781762630242": {
-      "_id": "mock_28_1781762630242",
-      "fromUserId": "mock_26_1781762619793",
-      "toUserId": "mock_15_1781691537955",
-      "propertyId": "general",
-      "text": "test",
-      "createdAt": "2026-06-18T06:03:50.242Z",
-      "updatedAt": "2026-06-18T06:03:50.242Z"
-    }
-  },
-  "Review": {
-    "mock_22_1781695756703": {
-      "_id": "mock_22_1781695756703",
-      "sellerId": "mock_16_1781691537958",
-      "userId": "mock_15_1781691537955",
-      "userName": "Abdulloh G'ofurjonov",
-      "rating": 5,
-      "text": "Test",
-      "createdAt": "2026-06-17T11:29:16.703Z",
-      "updatedAt": "2026-06-17T11:29:16.703Z"
-    }
-  }
+  "Property": {},
+  "Message": {}
 }

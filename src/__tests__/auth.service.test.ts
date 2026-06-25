@@ -1,37 +1,55 @@
-import bcrypt from 'bcryptjs'
-import { generateToken } from '../middleware/auth'
+jest.mock('../modules/auth/auth.repository', () => {
+  const mRepo = () => ({
+    hashPassword: jest.fn(),
+    verifyPassword: jest.fn(),
+    findUserByPhone: jest.fn(),
+    findUserByPhoneWithPassword: jest.fn(),
+    findUserById: jest.fn(),
+    createUser: jest.fn(),
+    setResetToken: jest.fn(),
+    blacklistRefreshToken: jest.fn(),
+    isTokenBlacklisted: jest.fn(),
+    findByResetToken: jest.fn(),
+    updatePassword: jest.fn(),
+  })
+  return { authRepository: mRepo() }
+})
 
-jest.mock('../modules/user/user.model')
-jest.mock('../modules/seller/seller.model')
-jest.mock('../modules/property/property.model')
-jest.mock('../modules/message/message.model')
+jest.mock('../utils/cache', () => ({
+  cache: {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+    delPattern: jest.fn(),
+    wrap: jest.fn((_key: string, fn: () => Promise<unknown>) => fn()),
+  },
+}))
 
-import { userModel } from '../modules/user/user.model'
-import { sellerModel } from '../modules/seller/seller.model'
-import * as authService from '../modules/auth/auth.service'
+import { authRepository } from '../modules/auth/auth.repository'
+import { authService } from '../modules/auth/auth.service'
 
-const mockUser = {
-  _id: 'user123',
-  firstName: 'John',
-  lastName: 'Doe',
-  phone: '+998901234567',
-  password: 'hashed_password',
-  role: 'seller',
-  toJSON: () => ({
-    _id: 'user123',
+const mockUserResponse = {
+  user: {
+    id: 'user123',
     firstName: 'John',
     lastName: 'Doe',
+    name: 'John Doe',
     phone: '+998901234567',
-    role: 'seller',
-  }),
+    avatar: '',
+    role: 'user' as const,
+    isVerified: false,
+  },
 }
 
-const mockSeller = {
-  _id: 'seller123',
-  userId: 'user123',
+const mockSanitizedUser = {
+  id: 'user123',
+  firstName: 'John',
+  lastName: 'Doe',
   name: 'John Doe',
   phone: '+998901234567',
-  save: jest.fn(),
+  avatar: '',
+  role: 'user' as const,
+  isVerified: false,
 }
 
 describe('AuthService', () => {
@@ -40,98 +58,107 @@ describe('AuthService', () => {
   })
 
   describe('register', () => {
-    it('should create user and seller on registration', async () => {
-      ;(userModel.findOne as jest.Mock).mockResolvedValue(null)
-      ;(userModel.create as jest.Mock).mockResolvedValue(mockUser)
-      ;(sellerModel.create as jest.Mock).mockResolvedValue(mockSeller)
+    it('should create user and return token pair', async () => {
+      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(null)
+      ;(authRepository.hashPassword as jest.Mock).mockResolvedValue('hashed_password')
+      ;(authRepository.createUser as jest.Mock).mockResolvedValue(mockUserResponse.user)
 
       const result = await authService.register('John', 'Doe', '+998901234567', 'password123')
 
-      expect(userModel.findOne).toHaveBeenCalledWith({ phone: '+998901234567' })
-      expect(userModel.create).toHaveBeenCalled()
-      expect(sellerModel.create).toHaveBeenCalled()
-      expect(result).toHaveProperty('token')
+      expect(authRepository.findUserByPhone).toHaveBeenCalledWith('+998901234567')
+      expect(authRepository.hashPassword).toHaveBeenCalledWith('password123')
+      expect(authRepository.createUser).toHaveBeenCalledWith({
+        firstName: 'John',
+        lastName: 'Doe',
+        phone: '+998901234567',
+        password: 'hashed_password',
+      })
+      expect(result).toHaveProperty('tokens')
+      expect(result.tokens).toHaveProperty('accessToken')
+      expect(result.tokens).toHaveProperty('refreshToken')
       expect(result.user.firstName).toBe('John')
     })
 
     it('should throw ConflictError for duplicate phone', async () => {
-      ;(userModel.findOne as jest.Mock).mockResolvedValue(mockUser)
+      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(mockUserResponse.user)
 
       await expect(
         authService.register('John', 'Doe', '+998901234567', 'password123')
-      ).rejects.toThrow('Ushbu telefon raqami allaqachon ro\'yxatdan o\'tgan.')
+      ).rejects.toThrow('This phone number is already registered.')
     })
   })
 
   describe('login', () => {
-    it('should return token on valid credentials', async () => {
-      const userWithPassword = {
-        ...mockUser,
-        password: await bcrypt.hash('password123', 10),
-      }
-      ;(userModel.findOne as jest.Mock).mockResolvedValue(userWithPassword)
+    it('should return token pair on valid credentials', async () => {
+      ;(authRepository.findUserByPhoneWithPassword as jest.Mock).mockResolvedValue({
+        user: { ...mockSanitizedUser, role: 'user' },
+        passwordHash: 'correct_hash',
+      })
+      ;(authRepository.verifyPassword as jest.Mock).mockResolvedValue(true)
 
       const result = await authService.login('+998901234567', 'password123')
 
-      expect(result).toHaveProperty('token')
-      expect(result.user.firstName).toBe('John')
+      expect(authRepository.findUserByPhoneWithPassword).toHaveBeenCalledWith('+998901234567')
+      expect(authRepository.verifyPassword).toHaveBeenCalledWith('password123', 'correct_hash')
+      expect(result).toHaveProperty('tokens')
+      expect(result.tokens).toHaveProperty('accessToken')
     })
 
     it('should throw NotFoundError for unknown phone', async () => {
-      ;(userModel.findOne as jest.Mock).mockResolvedValue(null)
+      ;(authRepository.findUserByPhoneWithPassword as jest.Mock).mockResolvedValue(null)
 
       await expect(
         authService.login('+998900000000', 'password123')
-      ).rejects.toThrow('Foydalanuvchi topilmadi.')
+      ).rejects.toThrow('User not found with this phone number.')
     })
 
     it('should throw UnauthorizedError for wrong password', async () => {
-      const userWithPassword = {
-        ...mockUser,
-        password: await bcrypt.hash('correct_password', 10),
-      }
-      ;(userModel.findOne as jest.Mock).mockResolvedValue(userWithPassword)
+      ;(authRepository.findUserByPhoneWithPassword as jest.Mock).mockResolvedValue({
+        user: mockSanitizedUser,
+        passwordHash: 'correct_hash',
+      })
+      ;(authRepository.verifyPassword as jest.Mock).mockResolvedValue(false)
 
       await expect(
         authService.login('+998901234567', 'wrong_password')
-      ).rejects.toThrow('Noto\'g\'ri parol.')
+      ).rejects.toThrow('Invalid password.')
     })
   })
 
   describe('me', () => {
     it('should return user by ID', async () => {
-      ;(userModel.findById as jest.Mock).mockResolvedValue(mockUser)
+      ;(authRepository.findUserById as jest.Mock).mockResolvedValue(mockSanitizedUser)
 
       const result = await authService.me('user123')
 
-      expect(userModel.findById).toHaveBeenCalledWith('user123')
+      expect(authRepository.findUserById).toHaveBeenCalledWith('user123')
       expect(result.firstName).toBe('John')
     })
 
     it('should throw NotFoundError for unknown user', async () => {
-      ;(userModel.findById as jest.Mock).mockResolvedValue(null)
+      ;(authRepository.findUserById as jest.Mock).mockResolvedValue(null)
 
-      await expect(authService.me('nonexistent')).rejects.toThrow('Foydalanuvchi topilmadi.')
+      await expect(authService.me('nonexistent')).rejects.toThrow('User not found.')
     })
   })
 
   describe('forgotPassword', () => {
     it('should set reset token for existing user', async () => {
-      const updateMock = jest.fn().mockResolvedValue({})
-      ;(userModel.findOne as jest.Mock).mockResolvedValue(mockUser)
-      ;(userModel.findOneAndUpdate as jest.Mock).mockImplementation(updateMock)
+      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(mockUserResponse.user)
+      ;(authRepository.setResetToken as jest.Mock).mockResolvedValue(undefined)
 
       const result = await authService.forgotPassword('+998901234567')
 
-      expect(result.message).toContain('kod yuborildi')
+      expect(authRepository.setResetToken).toHaveBeenCalled()
+      expect(result.message).toBe('If this phone is registered, a reset code has been sent.')
     })
 
     it('should return generic message even for unknown phone (security)', async () => {
-      ;(userModel.findOne as jest.Mock).mockResolvedValue(null)
+      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(null)
 
       const result = await authService.forgotPassword('+998900000000')
 
-      expect(result.message).toContain('kod yuborildi')
+      expect(result.message).toBe('If this phone is registered, a reset code has been sent.')
     })
   })
 })

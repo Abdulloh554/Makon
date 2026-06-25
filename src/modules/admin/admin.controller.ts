@@ -1,7 +1,8 @@
 import type { Request, Response, NextFunction } from 'express'
 import * as adminService from './admin.service'
 import { sendSuccess, sendError } from '../../utils/response'
-import { generateToken } from '../../middleware/auth'
+import { generateToken } from '../../middleware/auth.middleware'
+import { config } from '../../config'
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
@@ -12,13 +13,20 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     }
     const user = await adminService.login(username, password)
     const token = generateToken(user)
-    sendSuccess(res, { token, user })
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: config.isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000,
+      path: '/api/v1/admin',
+    })
+    sendSuccess(res, { user })
   } catch (err) {
     next(err)
   }
 }
 
-export async function stats(req: Request, res: Response, next: NextFunction) {
+export async function stats(_req: Request, res: Response, next: NextFunction) {
   try {
     const data = await adminService.getStats()
     sendSuccess(res, data)
@@ -112,7 +120,7 @@ export async function listMessages(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function migrateImages(req: Request, res: Response, next: NextFunction) {
+export async function migrateImages(_req: Request, res: Response, next: NextFunction) {
   try {
     const result = await adminService.migratePropertyImages()
     sendSuccess(res, result)

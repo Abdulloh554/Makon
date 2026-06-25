@@ -3,7 +3,10 @@ import { userModel } from '../user/user.model'
 import { sellerModel } from '../seller/seller.model'
 import { config } from '../../config'
 
-const GOOGLE_CLIENT_ID = config.google.clientId
+const GOOGLE_CLIENT_ID = config.googleClientId
+
+// Large clock skew tolerance for dev (server clock is ~5h behind)
+OAuth2Client.CLOCK_SKEW_SECS_ = 72000
 
 let googleClient: OAuth2Client | null = null
 
@@ -67,7 +70,7 @@ export async function googleLogin(idToken: string) {
     })
   }
 
-  const userJson = user.toJSON()
+  const userJson = typeof user.toJSON === 'function' ? user.toJSON() : user
   delete userJson.password
   return { user: userJson }
 }

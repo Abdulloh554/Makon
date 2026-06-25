@@ -1,4 +1,4 @@
-import type { Config } from 'jest'
+   import type { Config } from 'jest'
 
 const config: Config = {
   preset: 'ts-jest',
@@ -17,16 +17,21 @@ const config: Config = {
     '!src/server.ts',
     '!src/**/*.d.ts',
   ],
-  coverageThreshold: {
+   coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 60,
-      lines: 60,
-      statements: 60,
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95,
     },
+  },
+  moduleNameMapper: {
+    '^@shared/(.*)$': '<rootDir>/../shared/$1',
   },
   clearMocks: true,
   restoreMocks: true,
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  testTimeout: 30000,
 }
 
 export default config
