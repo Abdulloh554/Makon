@@ -5,9 +5,6 @@ import { config } from '../../config'
 
 const GOOGLE_CLIENT_ID = config.googleClientId
 
-// Large clock skew tolerance for dev (server clock is ~5h behind)
-OAuth2Client.CLOCK_SKEW_SECS_ = 72000
-
 let googleClient: OAuth2Client | null = null
 
 function getGoogleClient(): OAuth2Client {

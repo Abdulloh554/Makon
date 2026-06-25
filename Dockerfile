@@ -6,6 +6,7 @@ COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY backend/tsconfig.json ./
+COPY backend/scripts/ ./scripts/
 COPY backend/src/ ./src/
 COPY shared/ ./shared/
 RUN npx tsc
