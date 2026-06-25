@@ -2,11 +2,10 @@
   "name": "joybor-backend",
   "version": "3.0.0",
   "description": "Joybor backend API — Makon platformasi (TypeScript, modulli arxitektura)",
-    "main": "dist/src/server.js",
+    "main": "dist/server.js",
   "scripts": {
-    "prebuild": "node scripts/copy-shared.cjs",
     "build": "tsc && tsc-alias",
-    "start": "node dist/src/server.js",
+    "start": "node dist/server.js",
     "start:dev": "tsx src/server.ts",
     "dev": "tsx watch src/server.ts",
     "lint": "eslint src/",

@@ -2,12 +2,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY backend/package.json backend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY backend/tsconfig.json ./
-COPY backend/src/ ./src/
-COPY shared/ ./shared/
+COPY tsconfig.json ./
+COPY src/ ./src/
 RUN npx tsc && npx tsc-alias
 
 FROM node:20-alpine AS runner
@@ -19,7 +18,7 @@ RUN adduser --system --uid 1001 nodeuser
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY backend/package.json ./
+COPY package.json ./
 
 RUN mkdir -p /app/uploads && chown -R nodeuser:nodejs /app/uploads
 
@@ -32,4 +31,4 @@ ENV PORT=4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
 
-CMD ["node", "dist/src/server.js"]
+CMD ["node", "dist/server.js"]
