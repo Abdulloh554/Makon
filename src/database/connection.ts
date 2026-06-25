@@ -38,6 +38,8 @@ export async function connectDatabase(): Promise<void> {
     await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      tls: true,
+      tlsInsecure: true,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
