@@ -6,7 +6,6 @@ COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY backend/tsconfig.json ./
-COPY backend/scripts/ ./scripts/
 COPY backend/src/ ./src/
 COPY shared/ ./shared/
 RUN npx tsc
@@ -33,4 +32,4 @@ ENV PORT=4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/backend/src/server.js"]

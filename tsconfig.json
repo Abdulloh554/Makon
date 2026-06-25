@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "commonjs",
     "lib": ["ES2022"],
+    "rootDir": "..",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
@@ -19,7 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/*", "../shared/*"]
+      "@shared/*": ["../shared/*"]
     }
   },
   "include": ["src/**/*.ts"],
