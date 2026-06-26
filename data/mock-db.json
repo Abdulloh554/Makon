@@ -11,7 +11,8 @@
       "isVerified": true,
       "isActive": true,
       "createdAt": "2026-06-22T06:48:38.286Z",
-      "updatedAt": "2026-06-22T06:48:38.286Z"
+      "updatedAt": "2026-06-26T06:30:43.564Z",
+      "lastLoginAt": "2026-06-26T06:30:43.564Z"
     },
     "mock_3_1782199999824": {
       "_id": "mock_3_1782199999824",
@@ -48,6 +49,43 @@
       "provider": "local",
       "createdAt": "2026-06-23T07:38:34.214Z",
       "updatedAt": "2026-06-23T07:38:34.214Z"
+    },
+    "mock_6_1782451450705": {
+      "_id": "mock_6_1782451450705",
+      "firstName": "Test",
+      "lastName": "User",
+      "phone": "+998901234567",
+      "password": "$2a$12$IiCCrAR81VPkhoAd1oR8AeCZ39/e.NaTZa5DokPu8Awq.ctFYA2vC",
+      "name": "Test User",
+      "role": "user",
+      "provider": "local",
+      "createdAt": "2026-06-26T05:24:10.705Z",
+      "updatedAt": "2026-06-26T05:24:10.705Z"
+    },
+    "mock_7_1782451574453": {
+      "_id": "mock_7_1782451574453",
+      "firstName": "Test2",
+      "lastName": "User2",
+      "phone": "+998901234568",
+      "password": "$2a$12$Vv3uWBEvk9suqvqGBtxXs.He8sN56PWt8dOKSKK3CtzjP/jEPBT6K",
+      "name": "Test2 User2",
+      "role": "user",
+      "provider": "local",
+      "createdAt": "2026-06-26T05:26:14.453Z",
+      "updatedAt": "2026-06-26T05:26:14.453Z"
+    },
+    "mock_11_1782455408014": {
+      "_id": "mock_11_1782455408014",
+      "provider": "google",
+      "googleId": "106055689531417196862",
+      "email": "abdullokg14@gmail.com",
+      "name": "Abdulloh",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "role": "user",
+      "isVerified": true,
+      "isActive": true,
+      "createdAt": "2026-06-26T06:30:08.014Z",
+      "updatedAt": "2026-06-26T06:30:08.014Z"
     }
   },
   "Seller": {
@@ -61,9 +99,120 @@
       "totalListings": 0,
       "joinedAt": "2026-06-22T06:48:38.287Z",
       "createdAt": "2026-06-22T06:48:38.287Z",
-      "updatedAt": "2026-06-22T06:48:38.287Z"
+      "updatedAt": "2026-06-26T06:26:53.144Z",
+      "$inc": {
+        "totalListings": 1
+      }
+    },
+    "mock_12_1782455408015": {
+      "_id": "mock_12_1782455408015",
+      "userId": "mock_11_1782455408014",
+      "name": "Abdulloh",
+      "phone": "",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "rating": 5,
+      "totalListings": 0,
+      "joinedAt": "2026-06-26T06:30:08.015Z",
+      "createdAt": "2026-06-26T06:30:08.015Z",
+      "updatedAt": "2026-06-26T06:30:08.016Z"
     }
   },
-  "Property": {},
-  "Message": {}
+  "Property": {
+    "mock_8_1782455213142": {
+      "_id": "mock_8_1782455213142",
+      "sellerId": "mock_2_1782110918287",
+      "title": "sdrftyuiol",
+      "description": "wertyuiopsdertyu8i9o0p",
+      "price": 41000,
+      "type": "house",
+      "dealType": "daily",
+      "status": "ready",
+      "rooms": 7,
+      "area": 500,
+      "location": {
+        "lat": 41.31301847829217,
+        "lng": 69.27587020387365,
+        "address": "asdrftyuisdfghjk"
+      },
+      "images": [
+        "/api/uploads/701a65f0a510f30757db4329288a9383.jpeg",
+        "/api/uploads/caf1e754c25251ec2ba8cf0983388ff0.jpeg"
+      ],
+      "isActive": true,
+      "createdAt": "2026-06-26T06:26:53.142Z",
+      "updatedAt": "2026-06-26T06:26:53.142Z"
+    }
+  },
+  "Message": {
+    "mock_9_1782455310277": {
+      "_id": "mock_9_1782455310277",
+      "fromUserId": "mock_1_1782110918286",
+      "toUserId": "mock_1_1782110918286",
+      "conversationId": "mock_1_1782110918286:mock_1_1782110918286",
+      "propertyId": "general",
+      "text": "etrtygyuuertyhuji",
+      "createdAt": "2026-06-26T06:28:30.277Z",
+      "updatedAt": "2026-06-26T06:28:30.277Z"
+    },
+    "mock_10_1782455312107": {
+      "_id": "mock_10_1782455312107",
+      "fromUserId": "mock_1_1782110918286",
+      "toUserId": "mock_1_1782110918286",
+      "conversationId": "mock_1_1782110918286:mock_1_1782110918286",
+      "propertyId": "general",
+      "text": "test",
+      "createdAt": "2026-06-26T06:28:32.107Z",
+      "updatedAt": "2026-06-26T06:28:32.107Z"
+    },
+    "mock_13_1782455424449": {
+      "_id": "mock_13_1782455424449",
+      "fromUserId": "mock_11_1782455408014",
+      "toUserId": "mock_1_1782110918286",
+      "conversationId": "mock_11_1782455408014:mock_1_1782110918286",
+      "propertyId": "general",
+      "text": "test",
+      "createdAt": "2026-06-26T06:30:24.449Z",
+      "updatedAt": "2026-06-26T06:30:24.449Z"
+    },
+    "mock_14_1782455427692": {
+      "_id": "mock_14_1782455427692",
+      "fromUserId": "mock_11_1782455408014",
+      "toUserId": "mock_1_1782110918286",
+      "conversationId": "mock_11_1782455408014:mock_1_1782110918286",
+      "propertyId": "general",
+      "text": "test",
+      "createdAt": "2026-06-26T06:30:27.692Z",
+      "updatedAt": "2026-06-26T06:30:27.692Z"
+    },
+    "mock_15_1782455464576": {
+      "_id": "mock_15_1782455464576",
+      "fromUserId": "mock_1_1782110918286",
+      "toUserId": "mock_11_1782455408014",
+      "conversationId": "mock_11_1782455408014:mock_1_1782110918286",
+      "propertyId": "general",
+      "text": "test",
+      "createdAt": "2026-06-26T06:31:04.576Z",
+      "updatedAt": "2026-06-26T06:31:04.576Z"
+    },
+    "mock_16_1782455486501": {
+      "_id": "mock_16_1782455486501",
+      "fromUserId": "mock_1_1782110918286",
+      "toUserId": "mock_11_1782455408014",
+      "conversationId": "mock_11_1782455408014:mock_1_1782110918286",
+      "propertyId": "general",
+      "text": "test",
+      "createdAt": "2026-06-26T06:31:26.501Z",
+      "updatedAt": "2026-06-26T06:31:26.501Z"
+    },
+    "mock_17_1782455492918": {
+      "_id": "mock_17_1782455492918",
+      "fromUserId": "mock_1_1782110918286",
+      "toUserId": "mock_11_1782455408014",
+      "conversationId": "mock_11_1782455408014:mock_1_1782110918286",
+      "propertyId": "general",
+      "text": "test",
+      "createdAt": "2026-06-26T06:31:32.918Z",
+      "updatedAt": "2026-06-26T06:31:32.918Z"
+    }
+  }
 }

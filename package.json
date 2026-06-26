@@ -2,7 +2,7 @@
   "name": "joybor-backend",
   "version": "3.0.0",
   "description": "Joybor backend API — Makon platformasi (TypeScript, modulli arxitektura)",
-    "main": "dist/server.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
@@ -33,6 +33,7 @@
     "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
     "file-type": "^22.0.1",
+    "firebase-admin": "^14.1.0",
     "google-auth-library": "^10.7.0",
     "helmet": "^8.0.0",
     "ioredis": "^5.11.1",

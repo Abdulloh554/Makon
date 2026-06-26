@@ -7,7 +7,7 @@
 export const USER_ROLES = ['user', 'seller', 'admin'] as const
 export type UserRole = (typeof USER_ROLES)[number]
 
-export const AUTH_PROVIDERS = ['local', 'telegram', 'google'] as const
+export const AUTH_PROVIDERS = ['local', 'telegram', 'google', 'firebase'] as const
 export type AuthProvider = (typeof AUTH_PROVIDERS)[number]
 
 export interface User {
@@ -22,6 +22,7 @@ export interface User {
   isActive: boolean
   isVerified: boolean
   provider: AuthProvider
+  firebaseUid?: string
   telegramId?: string
   telegramUsername?: string
   lastLoginAt?: string

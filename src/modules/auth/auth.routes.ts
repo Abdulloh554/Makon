@@ -47,6 +47,11 @@ router.post(
 )
 
 router.post(
+  '/firebase',
+  authController.firebase,
+)
+
+router.post(
   '/logout',
   authController.logout,
 )

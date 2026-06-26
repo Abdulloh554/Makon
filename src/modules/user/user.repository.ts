@@ -17,7 +17,8 @@ function toUser(doc: unknown): User | null {
     role: d.role as 'user' | 'seller' | 'admin',
     isActive: d.isActive as boolean,
     isVerified: d.isVerified as boolean,
-    provider: d.provider as 'local' | 'telegram' | 'google',
+    provider: d.provider as 'local' | 'telegram' | 'google' | 'firebase',
+    firebaseUid: d.firebaseUid as string | undefined,
     telegramId: d.telegramId as string | undefined,
     telegramUsername: d.telegramUsername as string | undefined,
     lastLoginAt: d.lastLoginAt as string | undefined,
@@ -60,7 +61,8 @@ export const userRepository = {
     name: string
     avatar?: string
     role?: 'user' | 'seller' | 'admin'
-    provider?: 'local' | 'telegram' | 'google'
+    provider?: 'local' | 'telegram' | 'google' | 'firebase'
+    firebaseUid?: string
   }): Promise<User> {
     const doc = await (userModel as any).create(data)
     const json = typeof doc.toJSON === 'function' ? doc.toJSON() : doc

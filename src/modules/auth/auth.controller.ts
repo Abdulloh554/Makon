@@ -167,6 +167,28 @@ export const authController = {
     }
   },
 
+  async firebase(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { idToken } = req.body as { idToken: string }
+      if (!idToken) {
+        res.status(400).json({
+          success: false,
+          error: { code: 'VALIDATION', message: 'idToken is required.' },
+        })
+        return
+      }
+      const result = await authService.firebase(idToken)
+      setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
+      const csrfToken = generateCsrfToken(req, res)
+      res.status(200).json({
+        success: true,
+        data: { user: result.user, csrfToken },
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+
   async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.userId!

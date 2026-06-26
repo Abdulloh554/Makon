@@ -192,6 +192,22 @@ export const authService = {
     }
   },
 
+  async firebase(idToken: string): Promise<AuthResult> {
+    let rawUser: any
+    try {
+      const { firebaseLogin: firebaseAuthFn } = await import('./auth.firebase')
+      const result = await firebaseAuthFn(idToken)
+      rawUser = result.user
+    } catch (err: any) {
+      throw new UnauthorizedError(err?.message || 'Invalid Firebase token.')
+    }
+    const tokens = generateTokenPair(rawUser.id || rawUser._id)
+    return {
+      user: sanitizeUser(rawUser),
+      tokens,
+    }
+  },
+
   async me(userId: string) {
     const user = await authRepository.findUserById(userId)
 

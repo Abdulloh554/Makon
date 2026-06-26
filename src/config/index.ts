@@ -51,6 +51,10 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().default(''),
   AWS_S3_BUCKET: z.string().default(''),
   AWS_REGION: z.string().default('eu-central-1'),
+
+  FIREBASE_PROJECT_ID: z.string().default(''),
+  FIREBASE_CLIENT_EMAIL: z.string().default(''),
+  FIREBASE_PRIVATE_KEY: z.string().default(''),
 }).superRefine((data, ctx) => {
   if (data.NODE_ENV === 'production') {
     if (!data.SMTP_USER || !data.SMTP_PASS) {
@@ -140,6 +144,12 @@ export const config = {
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
     s3Bucket: env.AWS_S3_BUCKET,
     region: env.AWS_REGION,
+  },
+
+  firebase: {
+    projectId: env.FIREBASE_PROJECT_ID,
+    clientEmail: env.FIREBASE_CLIENT_EMAIL,
+    privateKey: env.FIREBASE_PRIVATE_KEY,
   },
 } as const
 
