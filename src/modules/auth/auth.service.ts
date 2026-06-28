@@ -9,7 +9,10 @@ import jwt, { type SignOptions } from 'jsonwebtoken'
 import { randomUUID, randomBytes } from 'node:crypto'
 import { config } from '../../config'
 import { authRepository } from './auth.repository'
-import { UnauthorizedError, NotFoundError, ConflictError } from '../../errors/AppError'
+import { userRepository } from '../user/user.repository'
+import { sendNotificationEmail } from '../../services/email'
+import { UnauthorizedError, NotFoundError, ConflictError, ValidationError } from '../../errors/AppError'
+import { sellerModel } from '../seller/seller.model'
 
 interface TokenPair {
   accessToken: string
@@ -71,6 +74,17 @@ function verifyRefreshToken(token: string): { sub: string; jti: string } {
 
   return { sub: payload.sub, jti: payload.jti }
 }
+
+// ─── In-memory OTP store (no Redis needed) ──────────────────────────────
+const otpStore = new Map<string, { otp: string; firstName: string; lastName: string; expiresAt: number }>()
+
+// Clean expired OTPs every 5 minutes
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, val] of otpStore) {
+    if (val.expiresAt < now) otpStore.delete(key)
+  }
+}, 5 * 60 * 1000)
 
 function sanitizeUser(user: {
   id: string
@@ -135,6 +149,110 @@ export const authService = {
       phone,
       password: hashedPassword,
     })
+
+    const tokens = generateTokenPair(user.id)
+
+    return {
+      user: sanitizeUser(user),
+      tokens,
+    }
+  },
+
+  async sendRegistrationOtp(
+    email: string,
+    firstName: string,
+    lastName: string,
+  ): Promise<{ message: string; devOtp?: string }> {
+    const existing = await userRepository.findByEmail(email)
+    if (existing) {
+      throw new ConflictError('This email is already registered.')
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000))
+    const expiresAt = Date.now() + 10 * 60 * 1000
+
+    otpStore.set(email, { otp, firstName, lastName, expiresAt })
+
+    try {
+      await sendNotificationEmail({
+        to: email,
+        subject: 'Tasdiqlash kodi',
+        text: `Sizning tasdiqlash kodingiz: ${otp}\n\nKod 10 daqiqa davomida amal qiladi.`,
+      })
+    } catch (err: any) {
+      console.error(`[AUTH] Email yuborishda xatolik:`, err.message)
+      otpStore.delete(email)
+      throw new Error('Email yuborishda xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.')
+    }
+
+    if (config.isDev) {
+      console.log(`[DEV OTP] ${email} → Code: ${otp}`)
+      return { message: 'Tasdiqlash kodi emailingizga yuborildi.', devOtp: otp }
+    }
+
+    return { message: 'Tasdiqlash kodi emailingizga yuborildi.' }
+  },
+
+  async verifyRegistrationOtp(
+    email: string,
+    otp: string,
+  ): Promise<AuthResult> {
+    const stored = otpStore.get(email)
+    if (!stored) {
+      throw new ValidationError('Tasdiqlash kodi topilmadi. Iltimos, qayta urinib ko\'ring.')
+    }
+
+    if (Date.now() > stored.expiresAt) {
+      otpStore.delete(email)
+      throw new ValidationError('Tasdiqlash kodi muddati tugagan. Qayta yuboring.')
+    }
+
+    if (stored.otp !== otp) {
+      throw new ValidationError('Noto\'g\'ri tasdiqlash kodi.')
+    }
+
+    otpStore.delete(email)
+
+    const existing = await userRepository.findByEmail(email)
+    if (existing) {
+      throw new ConflictError('This email is already registered.')
+    }
+
+    const randomPassword = randomBytes(32).toString('hex')
+    const hashedPassword = await authRepository.hashPassword(randomPassword)
+    const name = `${stored.firstName} ${stored.lastName}`
+
+    const user = await userRepository.create({
+      firstName: stored.firstName,
+      lastName: stored.lastName,
+      phone: '',
+      password: hashedPassword,
+      name,
+      email,
+      role: 'user',
+      provider: 'local',
+      isVerified: true,
+    })
+
+    await sellerModel.create({
+      userId: user.id,
+      name,
+      phone: '',
+      avatar: user.avatar,
+      rating: 5.0,
+      totalListings: 0,
+      joinedAt: new Date(),
+    })
+
+    try {
+      await sendNotificationEmail({
+        to: email,
+        subject: 'Makon — akkauntingiz yaratildi',
+        text: `Assalomu alaykum, ${stored.firstName}!\n\nMakon platformasida akkauntingiz muvaffaqiyatli yaratildi.\n\nSizning parolingiz: ${randomPassword}\n\nIltimos, parolni o'zgartirish uchun profilingizga kiring.\n\nHurmat bilan,\nMakon jamoasi`,
+      })
+    } catch (err: any) {
+      console.error(`[AUTH] PAROL EMAILGA YUBORILMADI! ${email} | ${err.message}`)
+    }
 
     const tokens = generateTokenPair(user.id)
 

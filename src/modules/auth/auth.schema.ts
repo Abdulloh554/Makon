@@ -41,6 +41,23 @@ export const resetPasswordSchema = z.object({
     .max(100, 'Password must be at most 100 characters'),
 })
 
+export const sendOtpSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  firstName: z.string()
+    .min(2, 'First name must be at least 2 characters')
+    .max(50, 'First name must be at most 50 characters')
+    .trim(),
+  lastName: z.string()
+    .min(2, 'Last name must be at least 2 characters')
+    .max(50, 'Last name must be at most 50 characters')
+    .trim(),
+})
+
+export const verifyRegistrationSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  otp: z.string().length(6, 'OTP must be exactly 6 digits'),
+})
+
 export const refreshSchema = z.object({
   refreshToken: z.string().optional(),
 })
@@ -49,3 +66,5 @@ export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
+export type SendOtpInput = z.infer<typeof sendOtpSchema>
+export type VerifyRegistrationInput = z.infer<typeof verifyRegistrationSchema>

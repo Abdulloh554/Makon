@@ -204,6 +204,47 @@ export const authController = {
     }
   },
 
+  async sendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email, firstName, lastName } = req.body as {
+        email: string
+        firstName: string
+        lastName: string
+      }
+
+      const result = await authService.sendRegistrationOtp(email, firstName, lastName)
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+
+  async verifyRegistration(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email, otp } = req.body as { email: string; otp: string }
+
+      const result = await authService.verifyRegistrationOtp(email, otp)
+
+      setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
+
+      const csrfToken = generateCsrfToken(req, res)
+
+      res.status(200).json({
+        success: true,
+        data: {
+          user: result.user,
+          csrfToken,
+        },
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+
   async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { phone } = req.body as { phone: string }

@@ -59,6 +59,8 @@ export const userRepository = {
     phone: string
     password: string
     name: string
+    email?: string
+    isVerified?: boolean
     avatar?: string
     role?: 'user' | 'seller' | 'admin'
     provider?: 'local' | 'telegram' | 'google' | 'firebase'

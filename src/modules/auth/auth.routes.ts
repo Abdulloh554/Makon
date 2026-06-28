@@ -15,6 +15,8 @@ import {
   registerSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  sendOtpSchema,
+  verifyRegistrationSchema,
 } from './auth.schema'
 
 const router = Router()
@@ -60,6 +62,20 @@ router.get(
   '/me',
   authenticate,
   authController.me,
+)
+
+router.post(
+  '/send-otp',
+  authRateLimit,
+  validate({ body: sendOtpSchema }),
+  authController.sendOtp,
+)
+
+router.post(
+  '/verify-registration',
+  authRateLimit,
+  validate({ body: verifyRegistrationSchema }),
+  authController.verifyRegistration,
 )
 
 router.post(

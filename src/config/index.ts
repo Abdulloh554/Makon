@@ -38,6 +38,12 @@ const envSchema = z.object({
   SMTP_PASS: z.string().default(''),
   EMAIL_FROM: z.string().email().default('noreply@makon.uz'),
 
+  RESEND_API_KEY: z.string().default(''),
+
+  MAILERSEND_API_KEY: z.string().default(''),
+  MAILERSEND_FROM: z.string().default('abdullokg14@gmail.com'),
+  MAILERSEND_FROM_NAME: z.string().default('Makon'),
+
   SENTRY_DSN: z.string().default(''),
   SENTRY_ENABLED: z.string().default('false'),
 
@@ -124,6 +130,10 @@ export const config = {
       pass: env.SMTP_PASS,
     },
     from: env.EMAIL_FROM,
+    resendApiKey: env.RESEND_API_KEY,
+    mailersendApiKey: env.MAILERSEND_API_KEY,
+    mailersendFrom: env.MAILERSEND_FROM,
+    mailersendFromName: env.MAILERSEND_FROM_NAME,
   },
 
   sentry: {
