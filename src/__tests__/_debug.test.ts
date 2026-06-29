@@ -5,7 +5,7 @@ describe('DEBUG', () => {
   it('debug cookies', async () => {
     const res = await request(app)
       .post('/api/v1/auth/register')
-      .send({ firstName: 'Test', lastName: 'User', phone: '+998901234560', password: 'password123' })
+      .send({ firstName: 'Test', lastName: 'User', email: 'debug@example.com', password: 'password123' })
     console.log('Register status:', res.status)
     console.log('Body:', JSON.stringify(res.body))
     const raw = res.headers['set-cookie']

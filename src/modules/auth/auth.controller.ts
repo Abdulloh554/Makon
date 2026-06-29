@@ -43,8 +43,8 @@ function clearAuthCookies(res: Response): void {
 export const authController = {
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { phone, password } = req.body as { phone: string; password: string }
-      const result = await authService.login(phone, password)
+      const { email, password } = req.body as { email: string; password: string }
+      const result = await authService.login(email, password)
 
       setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
 
@@ -64,14 +64,14 @@ export const authController = {
 
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { firstName, lastName, phone, password } = req.body as {
+      const { firstName, lastName, email, password } = req.body as {
         firstName: string
         lastName: string
-        phone: string
+        email: string
         password: string
       }
 
-      const result = await authService.register(firstName, lastName, phone, password)
+      const result = await authService.register(firstName, lastName, email, password)
 
       setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
 
@@ -247,8 +247,8 @@ export const authController = {
 
   async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { phone } = req.body as { phone: string }
-      const result = await authService.forgotPassword(phone)
+      const { email } = req.body as { email: string }
+      const result = await authService.forgotPassword(email)
 
       res.status(200).json({
         success: true,

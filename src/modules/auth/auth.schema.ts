@@ -6,12 +6,10 @@
 
 import { z } from 'zod'
 
-const phoneSchema = z.string()
-  .min(1, 'Phone number is required')
-  .regex(/^\+998\d{9}$/, 'Invalid Uzbekistan phone number format (+998901234567)')
+const emailSchema = z.string().email('Invalid email address')
 
 export const loginSchema = z.object({
-  phone: phoneSchema,
+  email: emailSchema,
   password: z.string().min(1, 'Password is required'),
 })
 
@@ -24,14 +22,14 @@ export const registerSchema = z.object({
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must be at most 50 characters')
     .trim(),
-  phone: phoneSchema,
+  email: emailSchema,
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
     .max(100, 'Password must be at most 100 characters'),
 })
 
 export const forgotPasswordSchema = z.object({
-  phone: phoneSchema,
+  email: emailSchema,
 })
 
 export const resetPasswordSchema = z.object({

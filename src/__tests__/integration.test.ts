@@ -18,7 +18,7 @@ describe('Integration Tests', () => {
         .send({
           firstName: 'Integration',
           lastName: 'User',
-          phone: '+998901001001',
+          email: 'integration@example.com',
           password: 'password123',
         })
 
@@ -40,7 +40,7 @@ describe('Integration Tests', () => {
     it('should login with registered credentials', async () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
-        .send({ phone: '+998901001001', password: 'password123' })
+        .send({ email: 'integration@example.com', password: 'password123' })
 
       expect(res.status).toBe(200)
       expect(res.body.success).toBe(true)
@@ -55,7 +55,7 @@ describe('Integration Tests', () => {
     it('should register a seller', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
-        .send({ firstName: 'Prop', lastName: 'Owner', phone: '+998901002002', password: 'password123' })
+        .send({ firstName: 'Prop', lastName: 'Owner', email: 'prop@example.com', password: 'password123' })
 
       expect(res.status).toBe(201)
       cookies = extractCookies(res)
@@ -115,13 +115,13 @@ describe('Integration Tests', () => {
     it('should register two users', async () => {
       const res1 = await request(app)
         .post('/api/v1/auth/register')
-        .send({ firstName: 'Sender', lastName: 'One', phone: '+998901003001', password: 'password123' })
+        .send({ firstName: 'Sender', lastName: 'One', email: 'sender@example.com', password: 'password123' })
       expect(res1.status).toBe(201)
       cookies1 = extractCookies(res1)
 
       const res2 = await request(app)
         .post('/api/v1/auth/register')
-        .send({ firstName: 'Receiver', lastName: 'One', phone: '+998901003002', password: 'password123' })
+        .send({ firstName: 'Receiver', lastName: 'One', email: 'receiver@example.com', password: 'password123' })
       expect(res2.status).toBe(201)
       cookies2 = extractCookies(res2)
     })

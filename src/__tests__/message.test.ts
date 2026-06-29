@@ -17,7 +17,7 @@ describe('Messages API', () => {
       .send({
         firstName: 'Test',
         lastName: 'User',
-        phone: '+998901234567',
+        email: 'message@example.com',
         password: 'password123',
       })
     cookies = extractCookies(registerRes)

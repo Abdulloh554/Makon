@@ -18,25 +18,25 @@ describe('Auth API', () => {
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901234567',
+          email: 'test@example.com',
           password: 'password123',
         })
 
       expect(res.status).toBe(201)
       expect(res.body.success).toBe(true)
       expect(res.body.data.user.firstName).toBe('Test')
-      expect(res.body.data.user.phone).toBe('+998901234567')
+      expect(res.body.data.user.email).toBe('test@example.com')
       expect(res.body.data.user.password).toBeUndefined()
       expect(res.headers['set-cookie']).toBeDefined()
     })
 
-    it('should reject duplicate phone number', async () => {
+    it('should reject duplicate email', async () => {
       await request(app)
         .post('/api/v1/auth/register')
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901234567',
+          email: 'test@example.com',
           password: 'password123',
         })
 
@@ -45,7 +45,7 @@ describe('Auth API', () => {
         .send({
           firstName: 'Test2',
           lastName: 'User2',
-          phone: '+998901234567',
+          email: 'test@example.com',
           password: 'password456',
         })
 
@@ -53,13 +53,13 @@ describe('Auth API', () => {
       expect(res.body.success).toBe(false)
     })
 
-    it('should reject invalid phone number', async () => {
+    it('should reject invalid email', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '',
+          email: 'not-an-email',
           password: 'password123',
         })
 
@@ -74,7 +74,8 @@ describe('Auth API', () => {
       await userModel.create({
         firstName: 'Test',
         lastName: 'User',
-        phone: '+998901234567',
+        phone: '',
+        email: 'test@example.com',
         password: hashed,
       })
     })
@@ -83,7 +84,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          phone: '+998901234567',
+          email: 'test@example.com',
           password: 'password123',
         })
 
@@ -96,7 +97,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          phone: '+998901234567',
+          email: 'test@example.com',
           password: 'wrongpassword',
         })
 
@@ -107,7 +108,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          phone: '+998909999999',
+          email: 'unknown@example.com',
           password: 'password123',
         })
 
@@ -122,7 +123,7 @@ describe('Auth API', () => {
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901234567',
+          email: 'authme@example.com',
           password: 'password123',
         })
 
@@ -150,7 +151,7 @@ describe('Auth API', () => {
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901234567',
+          email: 'refreshtest@example.com',
           password: 'password123',
         })
 

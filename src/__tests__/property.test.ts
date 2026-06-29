@@ -37,13 +37,13 @@ describe('Properties API', () => {
     })
     sellerId = String(seller._id)
 
-    const apiPhone = `+9989000${String(Math.random()).slice(2, 7)}`
+    const apiEmail = `test${String(Math.random()).slice(2, 8)}@example.com`
     const registerRes = await request(app)
       .post('/api/v1/auth/register')
       .send({
         firstName: 'Test',
         lastName: 'User',
-        phone: apiPhone,
+        email: apiEmail,
         password: 'password123',
       })
 
@@ -55,7 +55,7 @@ describe('Properties API', () => {
     await sellerModel.create({
       userId: apiUserId,
       name: 'Test Seller',
-      phone: apiPhone,
+      phone: '',
       rating: 5.0,
       totalListings: 0,
     })

@@ -2,8 +2,8 @@ jest.mock('../modules/auth/auth.repository', () => {
   const mRepo = () => ({
     hashPassword: jest.fn(),
     verifyPassword: jest.fn(),
-    findUserByPhone: jest.fn(),
-    findUserByPhoneWithPassword: jest.fn(),
+    findUserByEmail: jest.fn(),
+    findUserByEmailWithPassword: jest.fn(),
     findUserById: jest.fn(),
     createUser: jest.fn(),
     setResetToken: jest.fn(),
@@ -34,7 +34,7 @@ const mockUserResponse = {
     firstName: 'John',
     lastName: 'Doe',
     name: 'John Doe',
-    phone: '+998901234567',
+    email: 'john@example.com',
     avatar: '',
     role: 'user' as const,
     isVerified: false,
@@ -46,7 +46,7 @@ const mockSanitizedUser = {
   firstName: 'John',
   lastName: 'Doe',
   name: 'John Doe',
-  phone: '+998901234567',
+  email: 'john@example.com',
   avatar: '',
   role: 'user' as const,
   isVerified: false,
@@ -59,18 +59,18 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should create user and return token pair', async () => {
-      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(null)
+      ;(authRepository.findUserByEmail as jest.Mock).mockResolvedValue(null)
       ;(authRepository.hashPassword as jest.Mock).mockResolvedValue('hashed_password')
       ;(authRepository.createUser as jest.Mock).mockResolvedValue(mockUserResponse.user)
 
-      const result = await authService.register('John', 'Doe', '+998901234567', 'password123')
+      const result = await authService.register('John', 'Doe', 'john@example.com', 'password123')
 
-      expect(authRepository.findUserByPhone).toHaveBeenCalledWith('+998901234567')
+      expect(authRepository.findUserByEmail).toHaveBeenCalledWith('john@example.com')
       expect(authRepository.hashPassword).toHaveBeenCalledWith('password123')
       expect(authRepository.createUser).toHaveBeenCalledWith({
         firstName: 'John',
         lastName: 'Doe',
-        phone: '+998901234567',
+        email: 'john@example.com',
         password: 'hashed_password',
       })
       expect(result).toHaveProperty('tokens')
@@ -79,48 +79,48 @@ describe('AuthService', () => {
       expect(result.user.firstName).toBe('John')
     })
 
-    it('should throw ConflictError for duplicate phone', async () => {
-      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(mockUserResponse.user)
+    it('should throw ConflictError for duplicate email', async () => {
+      ;(authRepository.findUserByEmail as jest.Mock).mockResolvedValue(mockUserResponse.user)
 
       await expect(
-        authService.register('John', 'Doe', '+998901234567', 'password123')
-      ).rejects.toThrow('This phone number is already registered.')
+        authService.register('John', 'Doe', 'john@example.com', 'password123')
+      ).rejects.toThrow('This email is already registered.')
     })
   })
 
   describe('login', () => {
     it('should return token pair on valid credentials', async () => {
-      ;(authRepository.findUserByPhoneWithPassword as jest.Mock).mockResolvedValue({
+      ;(authRepository.findUserByEmailWithPassword as jest.Mock).mockResolvedValue({
         user: { ...mockSanitizedUser, role: 'user' },
         passwordHash: 'correct_hash',
       })
       ;(authRepository.verifyPassword as jest.Mock).mockResolvedValue(true)
 
-      const result = await authService.login('+998901234567', 'password123')
+      const result = await authService.login('john@example.com', 'password123')
 
-      expect(authRepository.findUserByPhoneWithPassword).toHaveBeenCalledWith('+998901234567')
+      expect(authRepository.findUserByEmailWithPassword).toHaveBeenCalledWith('john@example.com')
       expect(authRepository.verifyPassword).toHaveBeenCalledWith('password123', 'correct_hash')
       expect(result).toHaveProperty('tokens')
       expect(result.tokens).toHaveProperty('accessToken')
     })
 
-    it('should throw NotFoundError for unknown phone', async () => {
-      ;(authRepository.findUserByPhoneWithPassword as jest.Mock).mockResolvedValue(null)
+    it('should throw NotFoundError for unknown email', async () => {
+      ;(authRepository.findUserByEmailWithPassword as jest.Mock).mockResolvedValue(null)
 
       await expect(
-        authService.login('+998900000000', 'password123')
-      ).rejects.toThrow('User not found with this phone number.')
+        authService.login('unknown@example.com', 'password123')
+      ).rejects.toThrow('User not found with this email.')
     })
 
     it('should throw UnauthorizedError for wrong password', async () => {
-      ;(authRepository.findUserByPhoneWithPassword as jest.Mock).mockResolvedValue({
+      ;(authRepository.findUserByEmailWithPassword as jest.Mock).mockResolvedValue({
         user: mockSanitizedUser,
         passwordHash: 'correct_hash',
       })
       ;(authRepository.verifyPassword as jest.Mock).mockResolvedValue(false)
 
       await expect(
-        authService.login('+998901234567', 'wrong_password')
+        authService.login('john@example.com', 'wrong_password')
       ).rejects.toThrow('Invalid password.')
     })
   })
@@ -144,21 +144,21 @@ describe('AuthService', () => {
 
   describe('forgotPassword', () => {
     it('should set reset token for existing user', async () => {
-      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(mockUserResponse.user)
+      ;(authRepository.findUserByEmail as jest.Mock).mockResolvedValue(mockUserResponse.user)
       ;(authRepository.setResetToken as jest.Mock).mockResolvedValue(undefined)
 
-      const result = await authService.forgotPassword('+998901234567')
+      const result = await authService.forgotPassword('john@example.com')
 
       expect(authRepository.setResetToken).toHaveBeenCalled()
-      expect(result.message).toBe('If this phone is registered, a reset code has been sent.')
+      expect(result.message).toBe('If this email is registered, a reset link has been sent.')
     })
 
-    it('should return generic message even for unknown phone (security)', async () => {
-      ;(authRepository.findUserByPhone as jest.Mock).mockResolvedValue(null)
+    it('should return generic message even for unknown email (security)', async () => {
+      ;(authRepository.findUserByEmail as jest.Mock).mockResolvedValue(null)
 
-      const result = await authService.forgotPassword('+998900000000')
+      const result = await authService.forgotPassword('unknown@example.com')
 
-      expect(result.message).toBe('If this phone is registered, a reset code has been sent.')
+      expect(result.message).toBe('If this email is registered, a reset link has been sent.')
     })
   })
 })

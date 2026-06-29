@@ -6,7 +6,7 @@ describe('Security Comprehensive', () => {
     it('should allow register without CSRF token', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
-        .send({ firstName: 'Test', lastName: 'User', phone: '+998901234567', password: 'password123' })
+        .send({ firstName: 'Test', lastName: 'User', email: 'csrf@example.com', password: 'password123' })
 
       expect([201, 403]).toContain(res.status)
     })
@@ -52,7 +52,7 @@ describe('Security Comprehensive', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          phone: { $gt: '' },
+          email: { $gt: '' },
           password: { $regex: '.*' },
         })
 
@@ -99,7 +99,7 @@ describe('Security Comprehensive', () => {
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901234560',
+          email: 'normal@example.com',
           password: 'password123',
         })
 
@@ -114,7 +114,7 @@ describe('Security Comprehensive', () => {
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901239999',
+          email: 'jwttest@example.com',
           password: 'password123',
         })
 
@@ -132,13 +132,13 @@ describe('Security Comprehensive', () => {
   })
 
   describe('Validation', () => {
-    it('should reject empty phone number', async () => {
+    it('should reject empty email', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '',
+          email: '',
           password: 'password123',
         })
 
@@ -151,7 +151,7 @@ describe('Security Comprehensive', () => {
         .send({
           firstName: 'Test',
           lastName: 'User',
-          phone: '+998901234567',
+          email: 'emptypass@example.com',
           password: '',
         })
 

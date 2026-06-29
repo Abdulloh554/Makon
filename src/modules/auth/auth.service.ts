@@ -27,7 +27,7 @@ interface AuthResult {
     firstName: string
     lastName: string
     name: string
-    phone: string
+    email: string
     avatar: string
     role: 'user' | 'seller' | 'admin'
     isVerified: boolean
@@ -91,7 +91,7 @@ function sanitizeUser(user: {
   firstName: string
   lastName: string
   name: string
-  phone: string
+  email?: string
   avatar: string
   role: 'user' | 'seller' | 'admin'
   isVerified: boolean
@@ -101,7 +101,7 @@ function sanitizeUser(user: {
     firstName: user.firstName,
     lastName: user.lastName,
     name: user.name,
-    phone: user.phone,
+    email: user.email || '',
     avatar: user.avatar,
     role: user.role,
     isVerified: user.isVerified,
@@ -109,11 +109,11 @@ function sanitizeUser(user: {
 }
 
 export const authService = {
-  async login(phone: string, password: string): Promise<AuthResult> {
-    const result = await authRepository.findUserByPhoneWithPassword(phone)
+  async login(email: string, password: string): Promise<AuthResult> {
+    const result = await authRepository.findUserByEmailWithPassword(email)
 
     if (!result) {
-      throw new NotFoundError('User not found with this phone number.')
+      throw new NotFoundError('User not found with this email.')
     }
 
     const isMatch = await authRepository.verifyPassword(password, result.passwordHash)
@@ -132,13 +132,13 @@ export const authService = {
   async register(
     firstName: string,
     lastName: string,
-    phone: string,
+    email: string,
     password: string,
   ): Promise<AuthResult> {
-    const existing = await authRepository.findUserByPhone(phone)
+    const existing = await authRepository.findUserByEmail(email)
 
     if (existing) {
-      throw new ConflictError('This phone number is already registered.')
+      throw new ConflictError('This email is already registered.')
     }
 
     const hashedPassword = await authRepository.hashPassword(password)
@@ -146,7 +146,7 @@ export const authService = {
     const user = await authRepository.createUser({
       firstName,
       lastName,
-      phone,
+      email,
       password: hashedPassword,
     })
 
@@ -336,11 +336,11 @@ export const authService = {
     return sanitizeUser(user)
   },
 
-  async forgotPassword(phone: string) {
-    const user = await authRepository.findUserByPhone(phone)
+  async forgotPassword(email: string) {
+    const user = await authRepository.findUserByEmail(email)
 
     if (!user) {
-      return { message: 'If this phone is registered, a reset code has been sent.' }
+      return { message: 'If this email is registered, a reset link has been sent.' }
     }
 
     const token = randomBytes(32).toString('hex')
@@ -348,11 +348,17 @@ export const authService = {
 
     await authRepository.setResetToken(user.id, token, expires)
 
-    if (config.isDev) {
-      console.log(`[DEV] Password reset token for ${phone}: ${token}`)
+    try {
+      await sendNotificationEmail({
+        to: email,
+        subject: 'Parolni tiklash',
+        text: `Parolingizni tiklash uchun quyidagi kodni kiriting: ${token}\n\nKod 1 soat davomida amal qiladi.\n\nAgar parolni tiklashni so'ramagan bo'lsangiz, ushbu xabarni e'tiborsiz qoldiring.`,
+      })
+    } catch (err: any) {
+      console.error(`[AUTH] Password reset email failed:`, err.message)
     }
 
-    return { message: 'If this phone is registered, a reset code has been sent.' }
+    return { message: 'If this email is registered, a reset link has been sent.' }
   },
 
   async resetPassword(token: string, newPassword: string) {

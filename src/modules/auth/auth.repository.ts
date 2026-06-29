@@ -20,12 +20,12 @@ export const authRepository = {
     return bcrypt.compare(password, hash)
   },
 
-  async findUserByPhone(phone: string) {
-    return userRepository.findByPhone(phone)
+  async findUserByEmail(email: string) {
+    return userRepository.findByEmail(email)
   },
 
-  async findUserByPhoneWithPassword(phone: string) {
-    return userRepository.findByPhoneWithPassword(phone)
+  async findUserByEmailWithPassword(email: string) {
+    return userRepository.findByEmailWithPassword(email)
   },
 
   async findUserById(id: string) {
@@ -35,7 +35,7 @@ export const authRepository = {
   async createUser(data: {
     firstName: string
     lastName: string
-    phone: string
+    email: string
     password: string
   }) {
     return userRepository.create({
@@ -43,6 +43,7 @@ export const authRepository = {
       name: `${data.firstName} ${data.lastName}`,
       role: 'user',
       provider: 'local',
+      phone: '',
     })
   },
 

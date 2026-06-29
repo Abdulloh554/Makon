@@ -53,10 +53,20 @@ export const userRepository = {
     return toUser(doc)
   },
 
+  async findByEmailWithPassword(email: string): Promise<{ user: User; passwordHash: string } | null> {
+    const doc = await (userModel as any).findOne({ email })
+    if (!doc) return null
+    const raw = typeof doc.toJSON === 'function' ? doc.toJSON() : doc
+    return {
+      passwordHash: raw.password as string,
+      user: toUser(doc)!,
+    }
+  },
+
   async create(data: {
     firstName: string
     lastName: string
-    phone: string
+    phone?: string
     password: string
     name: string
     email?: string
@@ -73,7 +83,7 @@ export const userRepository = {
       firstName: json.firstName as string,
       lastName: json.lastName as string,
       name: json.name as string,
-      phone: json.phone as string,
+      phone: json.phone as string || '',
       email: json.email as string | undefined,
       avatar: json.avatar as string,
       role: json.role as 'user' | 'seller' | 'admin',
