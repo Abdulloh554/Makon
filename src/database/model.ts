@@ -23,6 +23,7 @@ export interface ModelInterface {
 function getBackend(): 'mock' | 'mongo' {
   if (dbStore.useMock) return 'mock'
   if (mongoose.connection.readyState === 1) return 'mongo'
+  if (process.env.USE_MONGO === 'false') return 'mock'
   const { NODE_ENV } = process.env
   if (NODE_ENV === 'production') {
     throw new Error('MongoDB is not connected. Cannot operate in production without a database.')
