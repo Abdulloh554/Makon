@@ -247,8 +247,8 @@ export const authService = {
     try {
       await sendNotificationEmail({
         to: email,
-        subject: 'Makon — akkauntingiz yaratildi',
-        text: `Assalomu alaykum, ${stored.firstName}!\n\nMakon platformasida akkauntingiz muvaffaqiyatli yaratildi.\n\nSizning parolingiz: ${randomPassword}\n\nIltimos, parolni o'zgartirish uchun profilingizga kiring.\n\nHurmat bilan,\nMakon jamoasi`,
+        subject: 'Maskan — akkauntingiz yaratildi',
+        text: `Assalomu alaykum, ${stored.firstName}!\n\nMaskan platformasida akkauntingiz muvaffaqiyatli yaratildi.\n\nSizning parolingiz: ${randomPassword}\n\nIltimos, parolni o'zgartirish uchun profilingizga kiring.\n\nHurmat bilan,\nMaskan jamoasi`,
       })
     } catch (err: any) {
       console.error(`[AUTH] PAROL EMAILGA YUBORILMADI! ${email} | ${err.message}`)

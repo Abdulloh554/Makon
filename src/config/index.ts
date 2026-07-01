@@ -18,8 +18,10 @@ const envSchema = z
     MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
     MONGODB_URI_TEST: z.string().optional(),
 
-    REDIS_ENABLED: z.string().default('false'),
-    REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
+  USE_MONGO: z.string().default('true'),
+
+  REDIS_ENABLED: z.string().default('false'),
+  REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
 
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
@@ -37,13 +39,11 @@ const envSchema = z
     SMTP_PORT: z.coerce.number().int().positive().default(587),
     SMTP_USER: z.string().default(''),
     SMTP_PASS: z.string().default(''),
-    EMAIL_FROM: z.string().email().default('noreply@makon.uz'),
-
-    RESEND_API_KEY: z.string().default(''),
+    EMAIL_FROM: z.string().email().default('noreply@maskan.uz'),
 
     MAILERSEND_API_KEY: z.string().default(''),
     MAILERSEND_FROM: z.string().default('abdullokg14@gmail.com'),
-    MAILERSEND_FROM_NAME: z.string().default('Makon'),
+    MAILERSEND_FROM_NAME: z.string().default('Maskan'),
 
     SENTRY_DSN: z.string().default(''),
     SENTRY_ENABLED: z.string().default('false'),
@@ -102,6 +102,7 @@ export const config = {
   mongodb: {
     uri: env.MONGODB_URI,
     testUri: env.MONGODB_URI_TEST,
+    enabled: env.USE_MONGO === 'true',
   },
 
   redis: {
@@ -132,7 +133,6 @@ export const config = {
       pass: env.SMTP_PASS,
     },
     from: env.EMAIL_FROM,
-    resendApiKey: env.RESEND_API_KEY,
     mailersendApiKey: env.MAILERSEND_API_KEY,
     mailersendFrom: env.MAILERSEND_FROM,
     mailersendFromName: env.MAILERSEND_FROM_NAME,

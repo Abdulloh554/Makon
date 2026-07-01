@@ -35,6 +35,22 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
     return
   }
 
+  const errRecord = err as unknown as Record<string, unknown>
+  const statusCode = errRecord.statusCode ?? errRecord.status
+
+  if (typeof statusCode === 'number' && statusCode >= 400 && statusCode < 500) {
+    const body: ErrorResponse = {
+      success: false,
+      error: {
+        code: statusCode === 403 ? 'FORBIDDEN' : statusCode === 429 ? 'RATE_LIMIT' : 'VALIDATION_ERROR',
+        message: err.message,
+      },
+    }
+
+    res.status(statusCode).json(body)
+    return
+  }
+
   console.error('Unhandled error:', {
     message: err.message,
     stack: err.stack,

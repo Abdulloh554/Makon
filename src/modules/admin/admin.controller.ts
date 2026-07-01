@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express'
 import * as adminService from './admin.service'
 import { sendSuccess, sendError } from '../../utils/response'
 import { generateToken } from '../../middleware/auth.middleware'
+import { generateCsrfToken } from '../../middleware/csrf.middleware'
 import { config } from '../../config'
 
 export async function login(req: Request, res: Response, next: NextFunction) {
@@ -13,14 +14,15 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     }
     const user = await adminService.login(username, password)
     const token = generateToken(user)
+    const csrfToken = generateCsrfToken(req, res)
     res.cookie('access_token', token, {
       httpOnly: true,
       secure: config.isProduction,
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
-      path: '/api/v1/admin',
+      path: '/',
     })
-    sendSuccess(res, { user })
+    sendSuccess(res, { user, csrfToken })
   } catch (err) {
     next(err)
   }
@@ -123,6 +125,15 @@ export async function listMessages(req: Request, res: Response, next: NextFuncti
 export async function migrateImages(_req: Request, res: Response, next: NextFunction) {
   try {
     const result = await adminService.migratePropertyImages()
+    sendSuccess(res, result)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export async function toggleFeatured(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await adminService.toggleFeatured(req.params.id as string)
     sendSuccess(res, result)
   } catch (err) {
     next(err)

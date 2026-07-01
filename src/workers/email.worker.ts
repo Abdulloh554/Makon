@@ -41,8 +41,8 @@ async function processEmailJob(job: EmailJob): Promise<void> {
     case 'welcome_email': {
       await sendEmail(
         job.email,
-        'Welcome to Makon!',
-        `<h1>Welcome, ${job.name}!</h1><p>Thank you for registering on Makon.</p>`,
+        'Welcome to Maskan!',
+        `<h1>Welcome, ${job.name}!</h1><p>Thank you for registering on Maskan.</p>`,
       )
       break
     }
@@ -51,7 +51,7 @@ async function processEmailJob(job: EmailJob): Promise<void> {
       const resetUrl = `${config.cors.origin}/reset?token=${job.token}`
       await sendEmail(
         job.email,
-        'Password Reset - Makon',
+        'Password Reset - Maskan',
         `<h1>Password Reset</h1><p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`,
       )
       break
@@ -60,7 +60,7 @@ async function processEmailJob(job: EmailJob): Promise<void> {
     case 'payment_receipt': {
       await sendEmail(
         job.email,
-        'Payment Receipt - Makon',
+        'Payment Receipt - Maskan',
         `<h1>Payment Confirmed</h1><p>Amount: ${job.amount} UZS</p><p>Property: ${job.propertyTitle}</p>`,
       )
       break
@@ -69,7 +69,7 @@ async function processEmailJob(job: EmailJob): Promise<void> {
     case 'message_notification': {
       await sendEmail(
         job.email,
-        'New Message - Makon',
+        'New Message - Maskan',
         `<h1>New Message from ${job.fromUserName}</h1><p>${job.messagePreview}</p>`,
       )
       break

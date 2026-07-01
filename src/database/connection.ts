@@ -14,6 +14,11 @@ export async function connectDatabase(): Promise<void> {
     return
   }
 
+  if (!config.mongodb.enabled) {
+    console.warn('MongoDB disabled via USE_MONGO=false')
+    return
+  }
+
   const uri = config.isTest && config.mongodb.testUri
     ? config.mongodb.testUri
     : config.mongodb.uri
@@ -38,8 +43,6 @@ export async function connectDatabase(): Promise<void> {
     await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-      tls: true,
-      tlsInsecure: true,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'

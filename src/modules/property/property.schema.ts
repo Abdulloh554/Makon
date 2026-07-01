@@ -38,5 +38,6 @@ export const propertySchemaDef: SchemaDefinition = {
   views: { type: Number, default: 0 },
   favorites: [{ type: String }],
   isActive: { type: Boolean, default: true },
+  featured: { type: Boolean, default: false },
   expiresAt: { type: Date },
 }

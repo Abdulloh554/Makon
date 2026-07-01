@@ -1,7 +1,7 @@
 /**
  * @file 20260619_001_initial_indexes.ts
  * @layer Database
- * @responsibility Initial migration — creates indexes for the Makon platform
+ * @responsibility Initial migration — creates indexes for the Maskan platform
  * NOTE: Mongoose schema `unique: true` / `index: true` handles per-field indexes.
  * This migration only creates compound and special indexes that schemas cannot define.
  */

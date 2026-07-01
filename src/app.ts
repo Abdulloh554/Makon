@@ -13,7 +13,7 @@ import cookieParser from 'cookie-parser'
 import mongoSanitize from 'express-mongo-sanitize'
 import { config } from './config'
 import { errorHandler } from './middleware/error.middleware'
-// import { doubleCsrfProtection } from './middleware/csrf.middleware'
+import { doubleCsrfProtection } from './middleware/csrf.middleware'
 import { rateLimiter } from './middleware/rate-limit.middleware'
 
 import authRoutes from './modules/auth/auth.routes'
@@ -23,6 +23,7 @@ import messagesRoutes from './modules/message/message.routes'
 import paymentRoutes from './modules/payment/payment.routes'
 import adminRoutes from './modules/admin/admin.routes'
 import imageRoutes from './modules/image/image.routes'
+import carouselRoutes from './modules/carousel/carousel.routes'
 import path from 'node:path'
 
 const app = express()
@@ -96,13 +97,28 @@ app.use((req: Request, _res: Response, next: () => void) => {
 app.use('/api/uploads', express.static(path.resolve(process.cwd(), 'uploads')))
 
 // ─── API v1 Routes ──────────────────────────────────────────────────
+// Auth: CSRF himoyasisiz (token hali mavjud emas)
 app.use('/api/v1/auth', authRoutes)
-app.use('/api/v1/properties', propertiesRoutes)
-app.use('/api/v1/sellers', sellersRoutes)
-app.use('/api/v1/messages', messagesRoutes)
+
+// CSRF bilan himoyalangan routelar (token cookie + header tekshiriladi)
+// Test mode'da CSRF o'tkazib yuboriladi (testlar CSRF tokensiz ishlaydi)
+const csrfGuard = (req: Request, res: Response, next: () => void) => {
+  if (process.env.NODE_ENV === 'test') return next()
+  doubleCsrfProtection(req, res, next)
+}
+app.use('/api/v1/properties', csrfGuard, propertiesRoutes)
+app.use('/api/v1/sellers', csrfGuard, sellersRoutes)
+app.use('/api/v1/messages', csrfGuard, messagesRoutes)
+app.use('/api/v1/images', csrfGuard, imageRoutes)
+
+// Payment webhook'lariga CSRF qo'llanilmaydi (Stripe/Payme/Click tashqi xizmat)
 app.use('/api/v1/payments', paymentRoutes)
+
+// Admin routelari o'z ichida CSRF qo'llaydi
 app.use('/api/v1/admin', adminRoutes)
-app.use('/api/v1/images', imageRoutes)
+
+// Carousel (ommaviy — CSRF talab qilmaydi)
+app.use('/api/v1/carousel', carouselRoutes)
 
 // ─── Health Check ────────────────────────────────────────────────────
 const startTime = Date.now()

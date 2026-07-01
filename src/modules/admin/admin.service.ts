@@ -179,6 +179,13 @@ export async function migratePropertyImages(): Promise<{ fixed: number; total: n
   return { fixed, total }
 }
 
+export async function toggleFeatured(id: string) {
+  const property = await propertyModel.findById(id)
+  if (!property) throw new NotFoundError('Property not found')
+  const updated = await propertyModel.findByIdAndUpdate(id, { $set: { featured: !(property as any).featured } })
+  return updated
+}
+
 export async function listReviews(page: number, limit: number) {
   const skip = (page - 1) * limit
   const reviews = await (reviewModel as any).find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray()

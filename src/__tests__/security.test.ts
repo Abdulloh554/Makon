@@ -32,7 +32,7 @@ describe('Security Tests', () => {
         .get('/api/v1/health')
 
       expect(res.headers['x-content-type-options']).toBe('nosniff')
-      expect(res.headers['x-frame-options']).toBe('SAMEORIGIN')
+      expect(res.headers['x-frame-options']).toBe('DENY')
       expect(res.headers['x-xss-protection']).toBe('0')
     })
   })
@@ -57,7 +57,7 @@ describe('Security Tests', () => {
         .post('/api/v1/auth/register')
         .send(largePayload)
 
-      expect([400, 500]).toContain(res.status)
+      expect([400, 413, 500]).toContain(res.status)
     })
   })
 })

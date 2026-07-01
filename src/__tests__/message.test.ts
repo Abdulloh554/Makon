@@ -12,12 +12,13 @@ describe('Messages API', () => {
   }
 
   beforeEach(async () => {
+    const email = `message${Date.now()}${Math.random().toString(36).slice(2, 6)}@example.com`
     const registerRes = await request(app)
       .post('/api/v1/auth/register')
       .send({
         firstName: 'Test',
         lastName: 'User',
-        email: 'message@example.com',
+        email,
         password: 'password123',
       })
     cookies = extractCookies(registerRes)
@@ -59,7 +60,7 @@ describe('Messages API', () => {
         .set('Cookie', cookies)
 
       expect(res.status).toBe(200)
-      expect(typeof res.body.unread).toBe('number')
+      expect(typeof res.body.data.unread).toBe('number')
     })
   })
 })

@@ -15,6 +15,7 @@ export const API_ROUTES = {
     RESET_PASSWORD: '/api/v1/auth/reset-password',
     GOOGLE: '/api/v1/auth/google',
   },
+  CAROUSEL: '/api/v1/carousel',
   PROPERTIES: {
     LIST: '/api/v1/properties',
     CREATE: '/api/v1/properties',

@@ -18,5 +18,6 @@ router.get('/sellers', authenticate, doubleCsrfProtection, roleGuard('admin'), c
 router.delete('/sellers/:id', authenticate, doubleCsrfProtection, roleGuard('admin'), ctrl.deleteSeller)
 router.get('/messages', authenticate, doubleCsrfProtection, roleGuard('admin'), ctrl.listMessages)
 router.get('/reviews', authenticate, doubleCsrfProtection, roleGuard('admin'), ctrl.listReviews)
+router.patch('/properties/:id/feature', authenticate, doubleCsrfProtection, roleGuard('admin'), ctrl.toggleFeatured)
 
 export default router

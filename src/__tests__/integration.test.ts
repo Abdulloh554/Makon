@@ -59,6 +59,12 @@ describe('Integration Tests', () => {
 
       expect(res.status).toBe(201)
       cookies = extractCookies(res)
+
+      // Register orqali yaratilgan user uchun seller record yaratish
+      const meRes = await request(app).get('/api/v1/auth/me').set('Cookie', cookies)
+      const userId = meRes.body.data.id
+      const { sellerModel } = require('../modules/seller/seller.model')
+      await sellerModel.create({ userId, name: 'Prop Owner', phone: '', rating: 5.0, totalListings: 0 })
     })
 
     it('should create a property', async () => {
@@ -88,7 +94,7 @@ describe('Integration Tests', () => {
         .get(`/api/v1/properties/${propertyId}`)
 
       expect(res.status).toBe(200)
-      expect(res.body.title).toBe('Integration Property')
+      expect(res.body.data.title).toBe('Integration Property')
     })
 
     it('should list properties with filters', async () => {
@@ -148,7 +154,7 @@ describe('Integration Tests', () => {
         .set('Cookie', cookies2)
 
       expect(res.status).toBe(200)
-      expect(typeof res.body.unread).toBe('number')
+      expect(typeof res.body.data.unread).toBe('number')
     })
   })
 
@@ -158,7 +164,7 @@ describe('Integration Tests', () => {
         .get('/api/v1/sellers')
 
       expect(res.status).toBe(200)
-      expect(Array.isArray(res.body)).toBe(true)
+      expect(Array.isArray(res.body.data)).toBe(true)
     })
   })
 
