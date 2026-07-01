@@ -44,7 +44,7 @@ async function seed() {
 
   const hashedPassword = await bcrypt.hash('qwerty', 10)
 
-  const adminUser = await userModel.create({
+  await userModel.create({
     firstName: 'Admin',
     lastName: 'Admin',
     phone: 'qwerty',
