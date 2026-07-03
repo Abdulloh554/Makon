@@ -123,7 +123,7 @@ async function migrate() {
 
   // Final verification
   console.log('\n--- Verification ---')
-  for (const [modelName, collectionName] of Object.entries(COLLECTION_MAP)) {
+  for (const [, collectionName] of Object.entries(COLLECTION_MAP)) {
     const collection = mongoose.connection.collection(collectionName)
     const count = await collection.countDocuments()
     console.log(`${collectionName}: ${count} documents`)
