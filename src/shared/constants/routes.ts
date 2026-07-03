@@ -11,6 +11,7 @@ export const API_ROUTES = {
     LOGOUT: '/api/v1/auth/logout',
     REFRESH: '/api/v1/auth/refresh',
     ME: '/api/v1/auth/me',
+    CSRF: '/api/v1/auth/csrf',
     FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
     RESET_PASSWORD: '/api/v1/auth/reset-password',
     GOOGLE: '/api/v1/auth/google',

@@ -68,6 +68,7 @@ router.get('/', validate({ query: propertyListQuery }), ctrl.list)
 router.get('/:id', ctrl.getById)
 router.post('/', authenticate, validate({ body: propertyCreateBody }), ctrl.create)
 router.patch('/:id', authenticate, validate({ body: propertyUpdateBody }), ctrl.update)
+router.post('/:id/favorite', authenticate, ctrl.toggleFavorite)
 router.delete('/:id', authenticate, ctrl.deleteProperty)
 
 export default router

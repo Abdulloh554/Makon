@@ -255,6 +255,29 @@ export async function update(id: string, data: Record<string, unknown>, userId: 
   return toJSON(property)
 }
 
+export async function toggleFavorite(id: string, userId: string): Promise<Record<string, unknown>> {
+  const property = await propertyModel.findById(id)
+  if (!property) throw new NotFoundError('Property not found')
+
+  const propertyJson = property.toJSON ? property.toJSON() : property
+  const favorites: string[] = propertyJson.favorites ?? []
+
+  const index = favorites.indexOf(userId)
+  let isFavorite: boolean
+  if (index === -1) {
+    favorites.push(userId)
+    isFavorite = true
+  } else {
+    favorites.splice(index, 1)
+    isFavorite = false
+  }
+
+  await propertyModel.findByIdAndUpdate(id, { favorites })
+  await cache.del(`property:${id}`)
+
+  return { isFavorite }
+}
+
 export async function deleteProperty(id: string, userId: string) {
   const property = await propertyModel.findById(id)
   if (!property) throw new NotFoundError('Property not found')

@@ -15,13 +15,13 @@ const envSchema = z
 
     PORT: z.coerce.number().int().positive().max(65535).default(4000),
 
-    MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
+    MONGODB_URI: z.string().default(''),
     MONGODB_URI_TEST: z.string().optional(),
 
   USE_MONGO: z.string().default('true'),
 
   REDIS_ENABLED: z.string().default('false'),
-  REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
+  REDIS_URL: z.string().default(''),
 
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
@@ -63,17 +63,17 @@ const envSchema = z
     FIREBASE_CLIENT_EMAIL: z.string().default(''),
     FIREBASE_PRIVATE_KEY: z.string().default(''),
   })
-  .superRefine((data, ctx) => {
-    if (data.NODE_ENV === 'production') {
-      if (!data.SMTP_USER || !data.SMTP_PASS) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'SMTP credentials are required in production',
-          path: ['SMTP_USER'],
-        })
-      }
-    }
-  })
+  //.superRefine((data, ctx) => {
+  //  if (data.NODE_ENV === 'production') {
+  //    if (!data.SMTP_USER || !data.SMTP_PASS) {
+  //      ctx.addIssue({
+  //        code: z.ZodIssueCode.custom,
+  //        message: 'SMTP credentials are required in production',
+  //        path: ['SMTP_USER'],
+  //      })
+  //    }
+  //  }
+  //})
 
 function validateEnv(): z.infer<typeof envSchema> {
   const result = envSchema.safeParse(process.env)

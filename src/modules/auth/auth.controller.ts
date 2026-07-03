@@ -272,4 +272,9 @@ export const authController = {
       next(err)
     }
   },
+
+  async getCsrfToken(req: Request, res: Response): Promise<void> {
+    const csrfToken = generateCsrfToken(req, res)
+    res.json({ success: true, data: { csrfToken } })
+  },
 }

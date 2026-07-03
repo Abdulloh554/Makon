@@ -24,6 +24,7 @@ import paymentRoutes from './modules/payment/payment.routes'
 import adminRoutes from './modules/admin/admin.routes'
 import imageRoutes from './modules/image/image.routes'
 import carouselRoutes from './modules/carousel/carousel.routes'
+import reviewRoutes from './modules/review/review.routes'
 import path from 'node:path'
 
 const app = express()
@@ -59,7 +60,10 @@ app.use(helmet({
 
 // ─── CORS ────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: config.cors.origin,
+  origin: (origin, callback) => {
+    if (!origin || config.isDev) return callback(null, true)
+    callback(null, origin)
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'X-Request-ID'],
@@ -116,6 +120,9 @@ app.use('/api/v1/payments', paymentRoutes)
 
 // Admin routelari o'z ichida CSRF qo'llaydi
 app.use('/api/v1/admin', adminRoutes)
+
+// Reviews — authenticate + CSRF himoya
+app.use('/api/v1/reviews', csrfGuard, reviewRoutes)
 
 // Carousel (ommaviy — CSRF talab qilmaydi)
 app.use('/api/v1/carousel', carouselRoutes)

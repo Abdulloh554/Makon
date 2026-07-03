@@ -7,6 +7,10 @@
 import mongoose from 'mongoose'
 import { config } from '../config'
 
+// Set custom DNS servers for SRV resolution (required for mongodb+srv:// to work)
+const dns = require('dns') as typeof import('dns')
+dns.setServers(['8.8.8.8', '1.1.1.1'])
+
 let isConnected = false
 
 export async function connectDatabase(): Promise<void> {
@@ -14,8 +18,8 @@ export async function connectDatabase(): Promise<void> {
     return
   }
 
-  if (!config.mongodb.enabled) {
-    console.warn('MongoDB disabled via USE_MONGO=false')
+  if (!config.mongodb.enabled || !config.mongodb.uri) {
+    console.warn('MongoDB disabled via USE_MONGO=false or MONGODB_URI not set')
     return
   }
 

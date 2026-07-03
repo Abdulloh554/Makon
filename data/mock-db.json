@@ -71,6 +71,20 @@
       "createdAt": "2026-07-01T11:47:45.538Z",
       "updatedAt": "2026-07-01T11:47:45.538Z",
       "_sellerId": "mock_1782906465539"
+    },
+    "mock_20_1782911692343": {
+      "_id": "mock_20_1782911692343",
+      "provider": "google",
+      "googleId": "106055689531417196862",
+      "email": "abdullokg14@gmail.com",
+      "name": "Abdulloh",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "role": "user",
+      "isVerified": true,
+      "isActive": true,
+      "createdAt": "2026-07-01T13:14:52.343Z",
+      "updatedAt": "2026-07-01T16:11:53.224Z",
+      "lastLoginAt": "2026-07-01T16:11:53.224Z"
     }
   },
   "Seller": {
@@ -131,6 +145,21 @@
       "joinedAt": "2026-07-01T11:47:45.539Z",
       "createdAt": "2026-07-01T11:47:45.539Z",
       "updatedAt": "2026-07-01T11:47:45.539Z"
+    },
+    "mock_21_1782911692349": {
+      "_id": "mock_21_1782911692349",
+      "userId": "mock_20_1782911692343",
+      "name": "Abdulloh",
+      "phone": "",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKKWJ7LUAOVU8jQPdwjr-lB1x3V1HQin798-a7uNqci8b4Vgw=s96-c",
+      "rating": 5,
+      "totalListings": 0,
+      "joinedAt": "2026-07-01T13:14:52.349Z",
+      "createdAt": "2026-07-01T13:14:52.349Z",
+      "updatedAt": "2026-07-01T13:49:36.619Z",
+      "$inc": {
+        "totalListings": 1
+      }
     }
   },
   "Property": {
@@ -145,7 +174,7 @@
       "status": "ready",
       "rooms": 3,
       "area": 75,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.2995,
         "lng": 69.2401,
@@ -156,7 +185,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.418Z",
-      "updatedAt": "2026-07-01T11:47:34.418Z"
+      "updatedAt": "2026-07-01T13:50:14.625Z"
     },
     "mock_9_1782906454419": {
       "_id": "mock_9_1782906454419",
@@ -169,7 +198,7 @@
       "status": "ready",
       "rooms": 5,
       "area": 200,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.3095,
         "lng": 69.2501,
@@ -180,7 +209,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.419Z",
-      "updatedAt": "2026-07-01T11:47:34.419Z"
+      "updatedAt": "2026-07-01T13:50:12.325Z"
     },
     "mock_10_1782906454420": {
       "_id": "mock_10_1782906454420",
@@ -193,7 +222,7 @@
       "status": "ready",
       "rooms": 2,
       "area": 55,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.319500000000005,
         "lng": 69.2601,
@@ -204,7 +233,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.420Z",
-      "updatedAt": "2026-07-01T11:47:34.420Z"
+      "updatedAt": "2026-07-01T13:50:13.111Z"
     },
     "mock_11_1782906454421": {
       "_id": "mock_11_1782906454421",
@@ -217,7 +246,7 @@
       "status": "half-ready",
       "rooms": 3,
       "area": 65,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.3295,
         "lng": 69.2701,
@@ -228,7 +257,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.421Z",
-      "updatedAt": "2026-07-01T11:47:34.421Z"
+      "updatedAt": "2026-07-01T13:50:09.873Z"
     },
     "mock_12_1782906454422": {
       "_id": "mock_12_1782906454422",
@@ -241,7 +270,7 @@
       "status": "ready",
       "rooms": 6,
       "area": 250,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.3395,
         "lng": 69.2801,
@@ -252,7 +281,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.422Z",
-      "updatedAt": "2026-07-01T11:47:34.422Z"
+      "updatedAt": "2026-07-01T13:50:09.203Z"
     },
     "mock_13_1782906454423": {
       "_id": "mock_13_1782906454423",
@@ -265,7 +294,7 @@
       "status": "ready",
       "rooms": 4,
       "area": 120,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.3495,
         "lng": 69.2901,
@@ -276,7 +305,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.423Z",
-      "updatedAt": "2026-07-01T11:47:34.423Z"
+      "updatedAt": "2026-07-01T13:50:07.483Z"
     },
     "mock_14_1782906454423": {
       "_id": "mock_14_1782906454423",
@@ -289,7 +318,7 @@
       "status": "half-ready",
       "rooms": 0,
       "area": 500,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.359500000000004,
         "lng": 69.3001,
@@ -300,7 +329,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.423Z",
-      "updatedAt": "2026-07-01T11:47:34.423Z"
+      "updatedAt": "2026-07-01T13:50:08.517Z"
     },
     "mock_15_1782906454424": {
       "_id": "mock_15_1782906454424",
@@ -313,7 +342,7 @@
       "status": "land",
       "rooms": 0,
       "area": 1000,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.3695,
         "lng": 69.31009999999999,
@@ -324,7 +353,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.424Z",
-      "updatedAt": "2026-07-01T11:47:34.424Z"
+      "updatedAt": "2026-07-01T13:50:05.771Z"
     },
     "mock_16_1782906454424": {
       "_id": "mock_16_1782906454424",
@@ -396,7 +425,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.426Z",
-      "updatedAt": "2026-07-01T11:47:34.426Z"
+      "updatedAt": "2026-07-01T15:14:31.900Z"
     },
     "mock_19_1782906454426": {
       "_id": "mock_19_1782906454426",
@@ -409,7 +438,7 @@
       "status": "ready",
       "rooms": 4,
       "area": 180,
-      "featured": true,
+      "featured": false,
       "location": {
         "lat": 41.4095,
         "lng": 69.3501,
@@ -420,7 +449,7 @@
       ],
       "isActive": true,
       "createdAt": "2026-07-01T11:47:34.426Z",
-      "updatedAt": "2026-07-01T11:47:34.426Z"
+      "updatedAt": "2026-07-01T13:50:04.264Z"
     },
     "mock_1782906465540": {
       "_id": "mock_1782906465540",
@@ -826,6 +855,38 @@
       "isActive": true,
       "createdAt": "2026-06-30T07:47:45.539Z",
       "updatedAt": "2026-06-30T07:47:45.539Z"
+    },
+    "mock_22_1782913776612": {
+      "_id": "mock_22_1782913776612",
+      "sellerId": "mock_21_1782911692349",
+      "title": "Eng Zo'ri",
+      "description": "Eng Zo'ri sdfgtyuio",
+      "price": 100000,
+      "type": "apartment",
+      "dealType": "daily",
+      "status": "ready",
+      "rooms": 2,
+      "area": 500,
+      "floor": 1,
+      "totalFloors": 1,
+      "location": {
+        "lat": 41.31322315970588,
+        "lng": 69.27536487579347,
+        "address": "Toshkent, Skver"
+      },
+      "images": [
+        "/api/uploads/701a65f0a510f30757db4329288a9383.jpeg",
+        "/api/uploads/8a889315d0658da2415477003d6068f4.jpeg",
+        "/api/uploads/caf1e754c25251ec2ba8cf0983388ff0.jpeg",
+        "/api/uploads/70359ff8f50745337da29db4a6e308c0.jpeg",
+        "/api/uploads/67952a33f96bf04b0eff045e7e19e8d0.jpeg"
+      ],
+      "isActive": true,
+      "createdAt": "2026-07-01T13:49:36.612Z",
+      "updatedAt": "2026-07-01T13:50:02.083Z",
+      "featured": true
     }
-  }
+  },
+  "Message": {},
+  "Review": {}
 }

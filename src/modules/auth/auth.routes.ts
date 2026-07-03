@@ -53,6 +53,11 @@ router.post(
   authController.firebase,
 )
 
+router.get(
+  '/csrf',
+  authController.getCsrfToken,
+)
+
 router.post(
   '/logout',
   authController.logout,
