@@ -66,6 +66,15 @@ export async function update(req: Req, res: Response, next: NextFunction): Promi
   }
 }
 
+export async function getFavorites(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const properties = await propertyService.getFavorites(getUserId(req))
+    sendSuccess(res, properties)
+  } catch (err) {
+    next(err)
+  }
+}
+
 export async function toggleFavorite(req: Req, res: Response, next: NextFunction): Promise<void> {
   try {
     const result = await propertyService.toggleFavorite(req.params.id, getUserId(req))

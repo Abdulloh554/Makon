@@ -255,6 +255,11 @@ export async function update(id: string, data: Record<string, unknown>, userId: 
   return toJSON(property)
 }
 
+export async function getFavorites(userId: string): Promise<Record<string, unknown>[]> {
+  const properties = await propertyModel.find({ favorites: userId, isActive: true })
+  return Promise.all(properties.map(toJSON))
+}
+
 export async function toggleFavorite(id: string, userId: string): Promise<Record<string, unknown>> {
   const property = await propertyModel.findById(id)
   if (!property) throw new NotFoundError('Property not found')
