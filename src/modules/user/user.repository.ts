@@ -11,6 +11,7 @@ function toUser(doc: unknown): User | null {
     firstName: d.firstName as string,
     lastName: d.lastName as string,
     name: d.name as string,
+    username: d.username as string | undefined,
     phone: d.phone as string,
     email: d.email as string | undefined,
     avatar: d.avatar as string,
@@ -66,6 +67,7 @@ export const userRepository = {
   async create(data: {
     firstName: string
     lastName: string
+    username?: string
     phone?: string
     password: string
     name: string
@@ -83,6 +85,7 @@ export const userRepository = {
       firstName: json.firstName as string,
       lastName: json.lastName as string,
       name: json.name as string,
+      username: json.username as string | undefined,
       phone: json.phone as string || '',
       email: json.email as string | undefined,
       avatar: json.avatar as string,

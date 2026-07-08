@@ -12,7 +12,6 @@ import { authRepository } from './auth.repository'
 import { userRepository } from '../user/user.repository'
 import { sendNotificationEmail } from '../../services/email'
 import { UnauthorizedError, NotFoundError, ConflictError, ValidationError } from '../../errors/AppError'
-import { sellerModel } from '../seller/seller.model'
 
 interface TokenPair {
   accessToken: string
@@ -27,6 +26,7 @@ interface AuthResult {
     firstName: string
     lastName: string
     name: string
+    username?: string
     email: string
     avatar: string
     role: 'user' | 'seller' | 'admin'
@@ -76,7 +76,7 @@ function verifyRefreshToken(token: string): { sub: string; jti: string } {
 }
 
 // ─── In-memory OTP store (no Redis needed) ──────────────────────────────
-const otpStore = new Map<string, { otp: string; firstName: string; lastName: string; expiresAt: number }>()
+const otpStore = new Map<string, { otp: string; username: string; expiresAt: number }>()
 
 // Clean expired OTPs every 5 minutes
 setInterval(() => {
@@ -91,6 +91,7 @@ function sanitizeUser(user: {
   firstName: string
   lastName: string
   name: string
+  username?: string
   email?: string
   avatar: string
   role: 'user' | 'seller' | 'admin'
@@ -101,6 +102,7 @@ function sanitizeUser(user: {
     firstName: user.firstName,
     lastName: user.lastName,
     name: user.name,
+    username: user.username,
     email: user.email || '',
     avatar: user.avatar,
     role: user.role,
@@ -109,11 +111,11 @@ function sanitizeUser(user: {
 }
 
 export const authService = {
-  async login(email: string, password: string): Promise<AuthResult> {
-    const result = await authRepository.findUserByEmailWithPassword(email)
+  async login(phone: string, password: string): Promise<AuthResult> {
+    const result = await authRepository.findUserByPhoneWithPassword(phone)
 
     if (!result) {
-      throw new NotFoundError('User not found with this email.')
+      throw new NotFoundError('User not found with this phone.')
     }
 
     const isMatch = await authRepository.verifyPassword(password, result.passwordHash)
@@ -130,23 +132,21 @@ export const authService = {
   },
 
   async register(
-    firstName: string,
-    lastName: string,
-    email: string,
+    username: string,
+    phone: string,
     password: string,
   ): Promise<AuthResult> {
-    const existing = await authRepository.findUserByEmail(email)
+    const existing = await authRepository.findUserByPhone(phone)
 
     if (existing) {
-      throw new ConflictError('This email is already registered.')
+      throw new ConflictError('This phone is already registered.')
     }
 
     const hashedPassword = await authRepository.hashPassword(password)
 
     const user = await authRepository.createUser({
-      firstName,
-      lastName,
-      email,
+      username,
+      phone,
       password: hashedPassword,
     })
 
@@ -159,34 +159,33 @@ export const authService = {
   },
 
   async sendRegistrationOtp(
-    email: string,
-    firstName: string,
-    lastName: string,
+    phone: string,
+    username: string,
   ): Promise<{ message: string; devOtp?: string }> {
-    const existing = await userRepository.findByEmail(email)
+    const existing = await userRepository.findByPhone(phone)
     if (existing) {
-      throw new ConflictError('This email is already registered.')
+      throw new ConflictError('This phone is already registered.')
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000))
     const expiresAt = Date.now() + 10 * 60 * 1000
 
-    otpStore.set(email, { otp, firstName, lastName, expiresAt })
+    otpStore.set(phone, { otp, username, expiresAt })
 
     try {
       await sendNotificationEmail({
-        to: email,
+        to: phone,
         subject: 'Tasdiqlash kodi',
         text: `Sizning tasdiqlash kodingiz: ${otp}\n\nKod 10 daqiqa davomida amal qiladi.`,
       })
     } catch (err: any) {
       console.error(`[AUTH] Email yuborishda xatolik:`, err.message)
-      otpStore.delete(email)
+      otpStore.delete(phone)
       throw new Error('Email yuborishda xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.')
     }
 
     if (config.isDev) {
-      console.log(`[DEV OTP] ${email} → Code: ${otp}`)
+      console.log(`[DEV OTP] ${phone} → Code: ${otp}`)
       return { message: 'Tasdiqlash kodi emailingizga yuborildi.', devOtp: otp }
     }
 
@@ -194,16 +193,16 @@ export const authService = {
   },
 
   async verifyRegistrationOtp(
-    email: string,
+    phone: string,
     otp: string,
   ): Promise<AuthResult> {
-    const stored = otpStore.get(email)
+    const stored = otpStore.get(phone)
     if (!stored) {
       throw new ValidationError('Tasdiqlash kodi topilmadi. Iltimos, qayta urinib ko\'ring.')
     }
 
     if (Date.now() > stored.expiresAt) {
-      otpStore.delete(email)
+      otpStore.delete(phone)
       throw new ValidationError('Tasdiqlash kodi muddati tugagan. Qayta yuboring.')
     }
 
@@ -211,47 +210,33 @@ export const authService = {
       throw new ValidationError('Noto\'g\'ri tasdiqlash kodi.')
     }
 
-    otpStore.delete(email)
+    otpStore.delete(phone)
 
-    const existing = await userRepository.findByEmail(email)
+    const existing = await userRepository.findByPhone(phone)
     if (existing) {
-      throw new ConflictError('This email is already registered.')
+      throw new ConflictError('This phone is already registered.')
     }
 
-    const randomPassword = randomBytes(32).toString('hex')
-    const hashedPassword = await authRepository.hashPassword(randomPassword)
-    const name = `${stored.firstName} ${stored.lastName}`
-
     const user = await userRepository.create({
-      firstName: stored.firstName,
-      lastName: stored.lastName,
-      phone: '',
-      password: hashedPassword,
-      name,
-      email,
+      firstName: stored.username,
+      lastName: '',
+      username: stored.username,
+      phone,
+      password: '',
+      name: stored.username,
       role: 'user',
       provider: 'local',
       isVerified: true,
     })
 
-    await sellerModel.create({
-      userId: user.id,
-      name,
-      phone: '',
-      avatar: user.avatar,
-      rating: 5.0,
-      totalListings: 0,
-      joinedAt: new Date(),
-    })
-
     try {
       await sendNotificationEmail({
-        to: email,
+        to: phone,
         subject: 'Maskan — akkauntingiz yaratildi',
-        text: `Assalomu alaykum, ${stored.firstName}!\n\nMaskan platformasida akkauntingiz muvaffaqiyatli yaratildi.\n\nSizning parolingiz: ${randomPassword}\n\nIltimos, parolni o'zgartirish uchun profilingizga kiring.\n\nHurmat bilan,\nMaskan jamoasi`,
+        text: `Assalomu alaykum, ${stored.username}!\n\nMaskan platformasida akkauntingiz muvaffaqiyatli yaratildi.\n\nParolni o'rnatish uchun "Parolni unutdim" bo'limidan foydalaning.\n\nHurmat bilan,\nMaskan jamoasi`,
       })
     } catch (err: any) {
-      console.error(`[AUTH] PAROL EMAILGA YUBORILMADI! ${email} | ${err.message}`)
+      console.error(`[AUTH] Xabar yuborilmadi ${phone} | ${err.message}`)
     }
 
     const tokens = generateTokenPair(user.id)
@@ -336,11 +321,11 @@ export const authService = {
     return sanitizeUser(user)
   },
 
-  async forgotPassword(email: string) {
-    const user = await authRepository.findUserByEmail(email)
+  async forgotPassword(phone: string) {
+    const user = await authRepository.findUserByPhone(phone)
 
     if (!user) {
-      return { message: 'If this email is registered, a reset link has been sent.' }
+      return { message: 'If this phone is registered, a reset link has been sent.' }
     }
 
     const token = randomBytes(32).toString('hex')
@@ -350,7 +335,7 @@ export const authService = {
 
     try {
       await sendNotificationEmail({
-        to: email,
+        to: phone,
         subject: 'Parolni tiklash',
         text: `Parolingizni tiklash uchun quyidagi kodni kiriting: ${token}\n\nKod 1 soat davomida amal qiladi.\n\nAgar parolni tiklashni so'ramagan bo'lsangiz, ushbu xabarni e'tiborsiz qoldiring.`,
       })
@@ -358,7 +343,7 @@ export const authService = {
       console.error(`[AUTH] Password reset email failed:`, err.message)
     }
 
-    return { message: 'If this email is registered, a reset link has been sent.' }
+    return { message: 'If this phone is registered, a reset link has been sent.' }
   },
 
   async resetPassword(token: string, newPassword: string) {

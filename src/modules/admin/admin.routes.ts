@@ -2,11 +2,12 @@ import { Router } from 'express'
 import { authenticate } from '../../middleware/auth.middleware'
 import { roleGuard } from '../../middleware/role.guard'
 import { doubleCsrfProtection } from '../../middleware/csrf.middleware'
+import { rateLimiter } from '../../middleware/rate-limit.middleware'
 import * as ctrl from './admin.controller'
 
 const router = Router()
 
-router.post('/login', ctrl.login)
+router.post('/login', rateLimiter('auth'), ctrl.login)
 router.get('/stats', authenticate, doubleCsrfProtection, roleGuard('admin'), ctrl.stats)
 router.get('/users', authenticate, doubleCsrfProtection, roleGuard('admin'), ctrl.listUsers)
 router.get('/users/:id', authenticate, doubleCsrfProtection, roleGuard('admin'), ctrl.getUser)

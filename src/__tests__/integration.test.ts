@@ -16,15 +16,14 @@ describe('Integration Tests', () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'Integration',
-          lastName: 'User',
-          email: 'integration@example.com',
+          username: 'IntegrationUser',
+          phone: '+998901234567',
           password: 'password123',
         })
 
       expect(res.status).toBe(201)
       expect(res.body.success).toBe(true)
-      expect(res.body.data.user.firstName).toBe('Integration')
+      expect(res.body.data.user.username).toBe('IntegrationUser')
       cookies = extractCookies(res)
     })
 
@@ -34,13 +33,13 @@ describe('Integration Tests', () => {
         .set('Cookie', cookies)
 
       expect(res.status).toBe(200)
-      expect(res.body.data.firstName).toBe('Integration')
+      expect(res.body.data.username).toBe('IntegrationUser')
     })
 
     it('should login with registered credentials', async () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
-        .send({ email: 'integration@example.com', password: 'password123' })
+        .send({ phone: '+998901234567', password: 'password123' })
 
       expect(res.status).toBe(200)
       expect(res.body.success).toBe(true)
@@ -55,7 +54,7 @@ describe('Integration Tests', () => {
     it('should register a seller', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
-        .send({ firstName: 'Prop', lastName: 'Owner', email: 'prop@example.com', password: 'password123' })
+        .send({ username: 'PropOwner', phone: '+998901234568', password: 'password123' })
 
       expect(res.status).toBe(201)
       cookies = extractCookies(res)
@@ -121,13 +120,13 @@ describe('Integration Tests', () => {
     it('should register two users', async () => {
       const res1 = await request(app)
         .post('/api/v1/auth/register')
-        .send({ firstName: 'Sender', lastName: 'One', email: 'sender@example.com', password: 'password123' })
+        .send({ username: 'SenderOne', phone: '+998901234569', password: 'password123' })
       expect(res1.status).toBe(201)
       cookies1 = extractCookies(res1)
 
       const res2 = await request(app)
         .post('/api/v1/auth/register')
-        .send({ firstName: 'Receiver', lastName: 'One', email: 'receiver@example.com', password: 'password123' })
+        .send({ username: 'ReceiverOne', phone: '+998901234570', password: 'password123' })
       expect(res2.status).toBe(201)
       cookies2 = extractCookies(res2)
     })

@@ -43,8 +43,8 @@ function clearAuthCookies(res: Response): void {
 export const authController = {
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, password } = req.body as { email: string; password: string }
-      const result = await authService.login(email, password)
+      const { phone, password } = req.body as { phone: string; password: string }
+      const result = await authService.login(phone, password)
 
       setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
 
@@ -64,14 +64,13 @@ export const authController = {
 
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { firstName, lastName, email, password } = req.body as {
-        firstName: string
-        lastName: string
-        email: string
+      const { username, phone, password } = req.body as {
+        username: string
+        phone: string
         password: string
       }
 
-      const result = await authService.register(firstName, lastName, email, password)
+      const result = await authService.register(username, phone, password)
 
       setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
 
@@ -206,13 +205,12 @@ export const authController = {
 
   async sendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, firstName, lastName } = req.body as {
-        email: string
-        firstName: string
-        lastName: string
+      const { phone, username } = req.body as {
+        phone: string
+        username: string
       }
 
-      const result = await authService.sendRegistrationOtp(email, firstName, lastName)
+      const result = await authService.sendRegistrationOtp(phone, username)
 
       res.status(200).json({
         success: true,
@@ -225,9 +223,9 @@ export const authController = {
 
   async verifyRegistration(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, otp } = req.body as { email: string; otp: string }
+      const { phone, otp } = req.body as { phone: string; otp: string }
 
-      const result = await authService.verifyRegistrationOtp(email, otp)
+      const result = await authService.verifyRegistrationOtp(phone, otp)
 
       setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken)
 
@@ -247,8 +245,8 @@ export const authController = {
 
   async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email } = req.body as { email: string }
-      const result = await authService.forgotPassword(email)
+      const { phone } = req.body as { phone: string }
+      const result = await authService.forgotPassword(phone)
 
       res.status(200).json({
         success: true,

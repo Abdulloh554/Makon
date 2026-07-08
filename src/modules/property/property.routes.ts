@@ -65,6 +65,7 @@ const propertyListQuery = z.object({
 const router = Router()
 
 router.get('/', validate({ query: propertyListQuery }), ctrl.list)
+router.get('/mine', authenticate, ctrl.getMine)
 router.get('/favorites', authenticate, ctrl.getFavorites)
 router.get('/:id', ctrl.getById)
 router.post('/', authenticate, validate({ body: propertyCreateBody }), ctrl.create)

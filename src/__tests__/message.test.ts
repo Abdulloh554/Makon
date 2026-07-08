@@ -12,13 +12,12 @@ describe('Messages API', () => {
   }
 
   beforeEach(async () => {
-    const email = `message${Date.now()}${Math.random().toString(36).slice(2, 6)}@example.com`
+    const phone = `+99890${Date.now()}${Math.random().toString(36).slice(2, 6)}`
     const registerRes = await request(app)
       .post('/api/v1/auth/register')
       .send({
-        firstName: 'Test',
-        lastName: 'User',
-        email,
+        username: 'messagetest',
+        phone,
         password: 'password123',
       })
     cookies = extractCookies(registerRes)

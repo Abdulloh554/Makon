@@ -16,13 +16,12 @@ describe('Properties API', () => {
   }
 
   beforeEach(async () => {
-    const apiEmail = `test${String(Math.random()).slice(2, 8)}@example.com`
+    const apiPhone = `+99890${String(Math.random()).slice(2, 10)}`
     const registerRes = await request(app)
       .post('/api/v1/auth/register')
       .send({
-        firstName: 'Test',
-        lastName: 'User',
-        email: apiEmail,
+        username: 'propertyuser',
+        phone: apiPhone,
         password: 'password123',
       })
 

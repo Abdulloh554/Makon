@@ -6,30 +6,26 @@
 
 import { z } from 'zod'
 
-const emailSchema = z.string().email('Invalid email address')
+const phoneSchema = z.string().min(1, 'Phone is required')
 
 export const loginSchema = z.object({
-  email: emailSchema,
+  phone: phoneSchema,
   password: z.string().min(1, 'Password is required'),
 })
 
 export const registerSchema = z.object({
-  firstName: z.string()
-    .min(2, 'First name must be at least 2 characters')
-    .max(50, 'First name must be at most 50 characters')
+  username: z.string()
+    .min(2, 'Username must be at least 2 characters')
+    .max(30, 'Username must be at most 30 characters')
     .trim(),
-  lastName: z.string()
-    .min(2, 'Last name must be at least 2 characters')
-    .max(50, 'Last name must be at most 50 characters')
-    .trim(),
-  email: emailSchema,
+  phone: phoneSchema,
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
     .max(100, 'Password must be at most 100 characters'),
 })
 
 export const forgotPasswordSchema = z.object({
-  email: emailSchema,
+  phone: phoneSchema,
 })
 
 export const resetPasswordSchema = z.object({
@@ -40,19 +36,15 @@ export const resetPasswordSchema = z.object({
 })
 
 export const sendOtpSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  firstName: z.string()
-    .min(2, 'First name must be at least 2 characters')
-    .max(50, 'First name must be at most 50 characters')
-    .trim(),
-  lastName: z.string()
-    .min(2, 'Last name must be at least 2 characters')
-    .max(50, 'Last name must be at most 50 characters')
+  phone: phoneSchema,
+  username: z.string()
+    .min(2, 'Username must be at least 2 characters')
+    .max(30, 'Username must be at most 30 characters')
     .trim(),
 })
 
 export const verifyRegistrationSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  phone: phoneSchema,
   otp: z.string().length(6, 'OTP must be exactly 6 digits'),
 })
 

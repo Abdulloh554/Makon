@@ -18,7 +18,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     res.cookie('access_token', token, {
       httpOnly: true,
       secure: config.isProduction,
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 15 * 60 * 1000,
       path: '/',
     })

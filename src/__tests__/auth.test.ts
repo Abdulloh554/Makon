@@ -16,36 +16,33 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'Test',
-          lastName: 'User',
-          email: 'test@example.com',
+          username: 'testuser',
+          phone: '+998901234567',
           password: 'password123',
         })
 
       expect(res.status).toBe(201)
       expect(res.body.success).toBe(true)
-      expect(res.body.data.user.firstName).toBe('Test')
-      expect(res.body.data.user.email).toBe('test@example.com')
+      expect(res.body.data.user.username).toBe('testuser')
+      expect(res.body.data.user.phone).toBe('+998901234567')
       expect(res.body.data.user.password).toBeUndefined()
       expect(res.headers['set-cookie']).toBeDefined()
     })
 
-    it('should reject duplicate email', async () => {
+    it('should reject duplicate phone', async () => {
       await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'Test',
-          lastName: 'User',
-          email: 'test@example.com',
+          username: 'testuser',
+          phone: '+998901234567',
           password: 'password123',
         })
 
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'Test2',
-          lastName: 'User2',
-          email: 'test@example.com',
+          username: 'testuser2',
+          phone: '+998901234567',
           password: 'password456',
         })
 
@@ -53,13 +50,12 @@ describe('Auth API', () => {
       expect(res.body.success).toBe(false)
     })
 
-    it('should reject invalid email', async () => {
+    it('should reject invalid phone', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'Test',
-          lastName: 'User',
-          email: 'not-an-email',
+          username: 'Test',
+          phone: '',
           password: 'password123',
         })
 
@@ -72,10 +68,11 @@ describe('Auth API', () => {
       const salt = await bcrypt.genSalt(10)
       const hashed = await bcrypt.hash('password123', salt)
       await userModel.create({
-        firstName: 'Test',
+        username: 'loginuser',
+        firstName: 'Login',
         lastName: 'User',
-        phone: '',
-        email: 'test@example.com',
+        phone: '+998901234560',
+        email: '',
         password: hashed,
       })
     })
@@ -84,7 +81,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          email: 'test@example.com',
+          phone: '+998901234560',
           password: 'password123',
         })
 
@@ -97,7 +94,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          email: 'test@example.com',
+          phone: '+998901234560',
           password: 'wrongpassword',
         })
 
@@ -108,7 +105,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          email: 'unknown@example.com',
+          phone: '+998901239999',
           password: 'password123',
         })
 
@@ -121,9 +118,8 @@ describe('Auth API', () => {
       const registerRes = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'Test',
-          lastName: 'User',
-          email: 'authme@example.com',
+          username: 'authmeuser',
+          phone: '+998901234561',
           password: 'password123',
         })
 
@@ -133,7 +129,7 @@ describe('Auth API', () => {
         .set('Cookie', cookies)
 
       expect(res.status).toBe(200)
-      expect(res.body.data.firstName).toBe('Test')
+      expect(res.body.data.username).toBe('authmeuser')
     })
 
     it('should return 401 without auth', async () => {
@@ -149,9 +145,8 @@ describe('Auth API', () => {
       const registerRes = await request(app)
         .post('/api/v1/auth/register')
         .send({
-          firstName: 'Test',
-          lastName: 'User',
-          email: 'refreshtest@example.com',
+          username: 'refreshtest',
+          phone: '+998901234562',
           password: 'password123',
         })
 

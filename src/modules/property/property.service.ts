@@ -255,6 +255,15 @@ export async function update(id: string, data: Record<string, unknown>, userId: 
   return toJSON(property)
 }
 
+export async function getMine(userId: string): Promise<Record<string, unknown>[]> {
+  const seller = await sellerModel.findOne({ userId })
+  if (!seller) return []
+
+  const sellerId = String(seller._id ?? seller.id ?? '')
+  const properties = await (propertyModel as any).find({ sellerId, isActive: true })
+  return Promise.all(properties.map(toJSON))
+}
+
 export async function getFavorites(userId: string): Promise<Record<string, unknown>[]> {
   const properties = await propertyModel.find({ favorites: userId, isActive: true })
   return Promise.all(properties.map(toJSON))

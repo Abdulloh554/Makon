@@ -30,7 +30,7 @@ export async function getStats() {
   const messagesCount = await messageModel.countDocuments()
   const reviewsCount = await reviewModel.countDocuments()
 
-  const properties = await (propertyModel as any).find({}).sort({ createdAt: -1 }).limit(100).toArray()
+  const properties = await (propertyModel as any).find({}).sort({ createdAt: -1 }).limit(100)
   const activeListings = properties.filter((p: any) => p.status !== 'sold' && p.isActive !== false).length
   const totalViews = properties.reduce((sum: number, p: any) => sum + (Number(p.views) || 0), 0)
 
@@ -47,7 +47,7 @@ export async function getStats() {
 
 export async function listUsers(page: number, limit: number) {
   const skip = (page - 1) * limit
-  const users = await (userModel as any).find({}).skip(skip).limit(limit).toArray()
+  const users = await (userModel as any).find({}).skip(skip).limit(limit)
   const total = await userModel.countDocuments()
   return { data: users.map((u: any) => { const j = { ...(typeof u.toJSON === 'function' ? u.toJSON() : u) }; delete j.password; return j }), total, page, totalPages: Math.ceil(total / limit) }
 }
@@ -95,7 +95,7 @@ export async function listProperties(page: number, limit: number, filters?: Reco
   const total = await propertyModel.countDocuments(filter)
   let query = (propertyModel as any).find(filter).sort({ createdAt: -1 }).skip(skip)
   if (limit > 0) query = query.limit(limit)
-  const properties = await query.toArray()
+  const properties = await query
   return { data: properties.map((p: any) => (typeof p.toJSON === 'function' ? p.toJSON() : p)), total, page, totalPages: Math.ceil(total / limit) }
 }
 
@@ -109,7 +109,7 @@ export async function deleteProperty(id: string) {
 
 export async function listSellers(page: number, limit: number) {
   const skip = (page - 1) * limit
-  const sellers = await (sellerModel as any).find({}).skip(skip).limit(limit).toArray()
+  const sellers = await (sellerModel as any).find({}).skip(skip).limit(limit)
   const total = await sellerModel.countDocuments()
   return { data: sellers.map((s: any) => (typeof s.toJSON === 'function' ? s.toJSON() : s)), total, page, totalPages: Math.ceil(total / limit) }
 }
@@ -125,14 +125,14 @@ export async function deleteSeller(id: string) {
 
 export async function listMessages(page: number, limit: number) {
   const skip = (page - 1) * limit
-  const messages = await (messageModel as any).find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray()
+  const messages = await (messageModel as any).find({}).sort({ createdAt: -1 }).skip(skip).limit(limit)
   const total = await messageModel.countDocuments()
   return { data: messages.map((m: any) => (typeof m.toJSON === 'function' ? m.toJSON() : m)), total, page, totalPages: Math.ceil(total / limit) }
 }
 
 export async function migratePropertyImages(): Promise<{ fixed: number; total: number }> {
   const { saveImage } = await import('../image/image.service')
-  const properties = await (propertyModel as any).find({}).toArray()
+  const properties = await (propertyModel as any).find({})
   const total = properties.length
   let fixed = 0
 
@@ -188,7 +188,7 @@ export async function toggleFeatured(id: string) {
 
 export async function listReviews(page: number, limit: number) {
   const skip = (page - 1) * limit
-  const reviews = await (reviewModel as any).find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray()
+  const reviews = await (reviewModel as any).find({}).sort({ createdAt: -1 }).skip(skip).limit(limit)
   const total = await reviewModel.countDocuments()
   return { data: reviews.map((r: any) => (typeof r.toJSON === 'function' ? r.toJSON() : r)), total, page, totalPages: Math.ceil(total / limit) }
 }

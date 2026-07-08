@@ -1,9 +1,3 @@
-/**
- * @file user.types.ts
- * @layer Shared
- * @responsibility User and auth-related types
- */
-
 export const USER_ROLES = ['user', 'seller', 'admin'] as const
 export type UserRole = (typeof USER_ROLES)[number]
 
@@ -15,6 +9,7 @@ export interface User {
   firstName: string
   lastName: string
   name: string
+  username?: string
   phone: string
   email?: string
   avatar: string
@@ -36,8 +31,7 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  firstName: string
-  lastName: string
+  username: string
   phone: string
   password: string
 }
@@ -53,7 +47,7 @@ export interface RefreshResponse {
 }
 
 export interface ForgotPasswordRequest {
-  phone: string
+  email: string
 }
 
 export interface ResetPasswordRequest {

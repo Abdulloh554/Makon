@@ -93,7 +93,7 @@ async function seed() {
         lng: 69.2401 + (i * 0.01),
         address: 'Toshkent shahri',
       },
-      images: [`/api/uploads/${imageHash}.jpg`],
+      images: [`/api/uploads/${imageHash}.jpeg`],
       isActive: true,
     })
   }

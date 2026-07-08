@@ -66,6 +66,16 @@ export async function update(req: Req, res: Response, next: NextFunction): Promi
   }
 }
 
+export async function getMine(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const userId = getUserId(req)
+    const properties = await propertyService.getMine(userId)
+    sendSuccess(res, properties)
+  } catch (err) {
+    next(err)
+  }
+}
+
 export async function getFavorites(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const properties = await propertyService.getFavorites(getUserId(req))

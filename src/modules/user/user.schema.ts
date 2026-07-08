@@ -3,6 +3,7 @@ import type { SchemaDefinition } from 'mongoose'
 export const userSchemaDef: SchemaDefinition = {
   firstName: { type: String, trim: true, maxlength: 50 },
   lastName: { type: String, trim: true, maxlength: 50 },
+  username: { type: String, trim: true, maxlength: 30 },
   phone: { type: String, unique: true, sparse: true, trim: true },
   email: { type: String, unique: true, sparse: true, trim: true },
   password: { type: String, minlength: 6 },

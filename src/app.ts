@@ -100,6 +100,11 @@ app.use((req: Request, _res: Response, next: () => void) => {
 // ─── Static: Uploaded Files ──────────────────────────────────────────
 app.use('/api/uploads', express.static(path.resolve(process.cwd(), 'uploads')))
 
+// Fallback: missing upload file → 1×1 transparent SVG instead of 404
+app.use('/api/uploads', (_req: Request, res: Response) => {
+  res.type('image/svg+xml').status(200).send('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>')
+})
+
 // ─── API v1 Routes ──────────────────────────────────────────────────
 // Auth: CSRF himoyasisiz (token hali mavjud emas)
 app.use('/api/v1/auth', authRoutes)
